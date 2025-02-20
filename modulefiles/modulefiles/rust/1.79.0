@@ -1,0 +1,27 @@
+#%Module1.0#####################################################################
+##
+## modules modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tmodules - loads the modules software & application environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the modules environment"
+
+# for Tcl script use only
+set	version		1.79.0
+set	prefix		/opt/rust/$version
+
+
+setenv          CARGO_HOME	$prefix/cargo
+setenv          RUSTUP_HOME	$prefix/rustup
+prepend-path    PATH   		  $prefix/cargo/bin
+puts stdout "source $prefix/cargo/env"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/rust/$version}
