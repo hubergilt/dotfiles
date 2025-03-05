@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Open Terminal Here</name>
+	<submenu></submenu>
+	<unique-id>1733494921333980-1</unique-id>
+	<command>exo-open --working-directory %f --launch TerminalEmulator</command>
+	<description>Example for a custom action</description>
+	<range></range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+</action>
+<action>
+	<icon>/home/huber/.local/share/icons/hicolor/48x48/actions/python-script.svg</icon>
+	<name>Execute Python Script</name>
+	<submenu></submenu>
+	<unique-id>1740170547585683-1</unique-id>
+	<command>python3 %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*.py</patterns>
+	<other-files/>
+	<text-files/>
+</action>
+<action>
+	<icon>Alacritty</icon>
+	<name>Open Alacritty Here </name>
+	<submenu></submenu>
+	<unique-id>1740178219925388-1</unique-id>
+	<command>alacritty --working-directory %f</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+</action>
+<action>
+	<icon>/home/huber/.local/share/icons/hicolor/48x48/actions/bash-script.png</icon>
+	<name>Execute Bash Script</name>
+	<submenu></submenu>
+	<unique-id>1740527882706161-1</unique-id>
+	<command>/usr/bin/bash -c &quot;%f&quot;</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*.sh</patterns>
+	<other-files/>
+	<text-files/>
+</action>
+<action>
+	<icon>/home/huber/.local/share/icons/hicolor/48x48/actions/plantuml-script.svg</icon>
+	<name>Execute plantUML Script</name>
+	<submenu></submenu>
+	<unique-id>1740614837961510-1</unique-id>
+	<command>plantuml %n</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*.puml</patterns>
+	<other-files/>
+	<text-files/>
+</action>
+</actions>
