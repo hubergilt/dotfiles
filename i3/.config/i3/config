@@ -231,3 +231,4 @@ client.background        $base
 # for start mate-polkit
 exec --no-startup-id sh -c '[ -f /usr/libexec/polkit-gnome-authentication-agent-1 ] && /usr/libexec/polkit-gnome-authentication-agent-1'
 exec --no-startup-id sh -c '[ -f /usr/lib/mate-polkit/polkit-mate-authentication-agent-1  ] && /usr/lib/mate-polkit/polkit-mate-authentication-agent-1'
+exec --no-startup-id sh -c '[ -f /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 ] && /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1'
