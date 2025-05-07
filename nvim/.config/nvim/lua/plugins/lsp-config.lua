@@ -14,7 +14,14 @@ return {
 		},
 		config = function()
 			require("mason-lspconfig").setup({
-				ensure_installed = { "lua_ls", "rust_analyzer", "jdtls", "tailwindcss", "pyright" },
+				ensure_installed = {
+					"lua_ls",
+					"rust_analyzer",
+					"jdtls",
+					"tailwindcss",
+					"pyright",
+					"matlab_ls",
+				},
 			})
 		end,
 	},
@@ -39,7 +46,6 @@ return {
 					"isort",
 					"autopep8",
 					"mypy",
-					"pylint",
 				},
 			})
 			vim.api.nvim_command("MasonToolsInstall")
@@ -107,6 +113,10 @@ return {
 						},
 					},
 				},
+			})
+			lspconfig.matlab_ls.setup({
+				filetypes = { "matlab", "octave" },
+				single_file_support = true,
 			})
 
 			vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
