@@ -16,11 +16,13 @@ return {
 			require("mason-lspconfig").setup({
 				ensure_installed = {
 					"lua_ls",
+					"ts_ls",
 					"rust_analyzer",
 					"jdtls",
 					"tailwindcss",
 					"pyright",
 					"matlab_ls",
+					"solargraph",
 				},
 			})
 		end,
@@ -97,6 +99,9 @@ return {
 					["rust-analyzer"] = {
 						cargo = {
 							allFeatures = true,
+							-- Add these lines to use nightly toolchain
+							-- extraEnv = { CARGO = "cargo +nightly" },
+							-- extraArgs = { "+nightly" },
 						},
 					},
 				},
@@ -117,6 +122,9 @@ return {
 			lspconfig.matlab_ls.setup({
 				filetypes = { "matlab", "octave" },
 				single_file_support = true,
+			})
+			lspconfig.solargraph.setup({
+				capabilities = capabilities,
 			})
 
 			vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
