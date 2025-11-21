@@ -1,0 +1,3 @@
+#%Module
+module unuse /usr/share/modules/modulefiles
+module use ~/modulefiles
