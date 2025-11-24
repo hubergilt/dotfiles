@@ -138,5 +138,5 @@ test -f "/home/huber/.xmake/profile" && source "/home/huber/.xmake/profile"
 #modulefiles
 source /usr/share/modules/init/bash
 export MODULEPATH=$MODULEPATH:$HOME/modulefiles
-
+#aliases
 if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi

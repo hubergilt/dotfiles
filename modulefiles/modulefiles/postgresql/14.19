@@ -1,0 +1,18 @@
+#%Module1.0
+proc ModulesHelp { } {
+    puts stderr "PostgreSQL 14.19"
+}
+
+module-whatis "PostgreSQL 14.19 database"
+
+conflict postgresql
+
+set pgversion 14
+set basedir /usr/lib/postgresql/$pgversion
+
+prepend-path PATH            $basedir/bin
+prepend-path LD_LIBRARY_PATH $basedir/lib
+prepend-path MANPATH         /usr/share/postgresql/$pgversion/man
+
+setenv PGDATA /var/lib/postgresql/$pgversion/main
+setenv PGHOME $basedir
