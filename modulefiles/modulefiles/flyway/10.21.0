@@ -1,0 +1,35 @@
+#%Module1.0
+## Flyway modulefile
+##
+proc ModulesHelp { } {
+    puts stderr "Flyway - Database migration tool"
+    puts stderr "Version: 10.21.0"
+    puts stderr ""
+    puts stderr "Usage: flyway [command] [options]"
+    puts stderr "Commands: migrate, clean, info, validate, baseline, repair"
+}
+
+module-whatis "Flyway database migration tool version 10.21.0"
+
+set version 10.21.0
+set root /opt/flyway/$version
+
+# Check if directory exists
+if { ![file exists $root] } {
+    puts stderr "Error: Flyway directory $root does not exist"
+    break
+}
+
+# Add flyway bin to PATH
+prepend-path PATH $root
+
+# Set FLYWAY_HOME environment variable
+setenv FLYWAY_HOME $root
+
+# Optional: Add lib directory to library path if needed
+prepend-path LD_LIBRARY_PATH $root/lib
+
+# Set Java options if needed (optional)
+# setenv FLYWAY_OPTS "-Xmx512m"
+
+conflict flyway
