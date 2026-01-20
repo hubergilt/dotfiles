@@ -1,0 +1,52 @@
+#%Module1.0#####################################################################
+##
+## modules modulefile
+##
+
+proc ModulesHelp { } {
+    global version prefix
+    
+    puts stderr "\tApache Ant - Java-based build tool"
+    puts stderr "\tVersion: $version"
+    puts stderr "\tInstallation path: $prefix"
+    puts stderr "\t"
+    puts stderr "\tThis module adds Ant to your environment:"
+    puts stderr "\t  - Sets ANT_HOME to $prefix"
+    puts stderr "\t  - Adds $prefix/bin to PATH"
+    puts stderr "\t  - Provides ant, antctl commands"
+}
+
+# Module configuration
+set     version         1.10.15
+set     prefix         /opt/ant/$version
+
+# Module metadata for 'module whatis'
+module-whatis "Apache Ant build tool version $version"
+module-whatis "Home: $prefix"
+module-whatis "Category: Development, Build Tools"
+
+# Set environment variables
+setenv  ANT_HOME       $prefix
+setenv  ANT_OPTS       "-Xmx512m"
+
+# Add to PATH
+prepend-path  PATH     $prefix/bin
+
+# Optional: Add to MANPATH if documentation exists
+if { [file exists $prefix/man] } {
+    prepend-path  MANPATH  $prefix/man
+}
+
+# Optional: Add library path if needed
+if { [file exists $prefix/lib] } {
+    prepend-path  LD_LIBRARY_PATH  $prefix/lib
+}
+
+# Conflict with other Ant versions
+conflict ant
+
+# Optional: Prerequisites (if any)
+# module load java/11
+
+# Enable module versioning (commented by default)
+# module use /opt/modulefiles/ant
