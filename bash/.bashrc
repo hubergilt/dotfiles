@@ -121,7 +121,7 @@ eval "$(starship init bash)"
 #rust
 . "$HOME/.cargo/env"
 #go
-export PATH=/usr/local/go/bin:$PATH
+export PATH=$HOME/go/bin:$PATH
 #pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
