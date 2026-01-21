@@ -1,0 +1,25 @@
+#%Module1.0#####################################################################
+##
+## Gradle 9.3.0 modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tgradle - loads the Gradle build tool & application environment"
+        puts stderr "\n\tThis adds $prefix/bin to your PATH"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+# Updated description string
+module-whatis	"loads the Gradle 9.3.0 build environment"
+
+# Version configuration
+set	version     9.3.0
+set	prefix      /opt/gradle/$version
+
+# Environment setup
+setenv          GRADLE_HOME $prefix
+prepend-path    PATH        $prefix/bin
+
+# Documentation/Reference: https://docs.gradle.org/9.3/release-notes.html`
