@@ -1,0 +1,28 @@
+#%Module1.0#####################################################################
+##
+## Java 25.0.1 Adoptium (Temurin) Modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tjava/25.0.1 - loads the Adoptium OpenJDK 25.0.1 environment"
+        puts stderr "\n\tThis adds $prefix/bin to your PATH and sets JAVA_HOME."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Adoptium OpenJDK 25.0.1 environment"
+
+# Specific version and path settings
+set	version		25.0.1
+# The Adoptium tarball typically extracts into a folder named '25.0.1'
+set	prefix		/opt/java/adoptium/jdk/$version
+
+setenv        JAVA_HOME $prefix
+prepend-path  PATH   	  $prefix/bin
+
+# Handling conflicts
+set conflicts "~/modulefiles/java/conflicts.tcl"
+if { [file exists $conflicts] } {
+    source $conflicts
+    proc_conflicts
+}

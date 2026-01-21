@@ -1,21 +1,21 @@
 #%Module1.0#####################################################################
 ##
-## modules modulefile
+## java modulefile
 ##
 proc ModulesHelp { } {
         global version prefix
 
-        puts stderr "\tmodules - loads the modules software & application environment"
+        puts stderr "\tjava - loads the Java JDK environment"
         puts stderr "\n\tThis adds $prefix/* to several of the"
         puts stderr "\tenvironment variables."
         puts stderr "\n\tVersion $version\n"
 }
 
-module-whatis	"loads the modules environment"
+module-whatis	"loads the Amazon Corretto JDK 11.0.30 environment"
 
 # for Tcl script use only
-set	version		19
-set	prefix		/opt/java/temurin/jre/$version
+set	version		11.0.30
+set	prefix		/opt/java/amazon/$version
 
 setenv        JAVA_HOME $prefix
 prepend-path  PATH   	  $prefix/bin
@@ -23,6 +23,3 @@ prepend-path  PATH   	  $prefix/bin
 set conflicts "~/modulefiles/java/conflicts.tcl"
 source $conflicts
 proc_conflicts
-
-# enable module versioning modulepath
-#module use {~/modulefiles/rust/$version}

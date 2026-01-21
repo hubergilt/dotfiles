@@ -1,0 +1,28 @@
+#%Module1.0#####################################################################
+##
+## Java 17.0.17 OpenJDK Modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tjava/17.0.17 - loads the OpenJDK 17.0.17 portable environment"
+        puts stderr "\n\tThis adds $prefix/bin to your PATH and sets JAVA_HOME."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the OpenJDK 17.0.17 (portable) environment"
+
+# Specific version and path settings
+set	version		17.0.17
+# Note: The tarball usually extracts into a folder named after the full package
+set	prefix		/opt/java/redhat/jdk/java-17-openjdk-17.0.17.0.10-1.portable.jdk.el.x86_64
+
+setenv        JAVA_HOME $prefix
+prepend-path  PATH   	  $prefix/bin
+
+# Handling conflicts
+set conflicts "~/modulefiles/java/conflicts.tcl"
+if { [file exists $conflicts] } {
+    source $conflicts
+    proc_conflicts
+}
