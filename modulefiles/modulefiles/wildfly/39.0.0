@@ -1,0 +1,38 @@
+#%Module1.0#####################################################################
+##
+## wildfly modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\twildfly - loads the WildFly application server environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the WildFly 39.0.0.Final environment"
+
+# for Tcl script use only
+set	version		39.0.0
+set	prefix		/opt/wildfly/$version
+set log         $prefix/standalone/log/server.log
+
+# WildFly requires Java
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv        JBOSS_HOME   $prefix
+setenv        WILDFLY_HOME $prefix
+prepend-path  PATH         $prefix/bin
+
+# Create aliases for easy management
+set-alias     wildfly-start      "nohup $prefix/bin/standalone.sh > $log 2>&1 & disown"
+set-alias     wildfly-stop       "$prefix/bin/jboss-cli.sh --connect command=:shutdown"
+set-alias     wildfly-domain     "$prefix/bin/domain.sh"
+set-alias     wildfly-cli        "$prefix/bin/jboss-cli.sh"
+set-alias     wildfly-logs       "tail -f $log"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/wildfly/$version}
