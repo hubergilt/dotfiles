@@ -1,0 +1,25 @@
+#%Module1.0#####################################################################
+##
+## javafx modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tjavafx - loads the JavaFX SDK environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the OpenJFX 21.0.10 SDK environment"
+
+# for Tcl script use only
+set	version		21.0.10
+set	prefix		/opt/javafx/$version
+
+setenv        JAVAFX_HOME $prefix
+prepend-path  PATH   	  $prefix/bin
+prepend-path  CLASSPATH   $prefix/lib/*
+
+# enable module versioning modulepath
+#module use {~/modulefiles/javafx/$version}
