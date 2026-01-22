@@ -1,0 +1,35 @@
+#%Module1.0#####################################################################
+##
+## jetuml modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tjetuml - loads the JetUML environment"
+        puts stderr "\n\tThis sets up the environment to run JetUML"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the JetUML 3.9 environment"
+
+# for Tcl script use only
+set	version		3.9
+set	prefix		/opt/jetuml/$version
+
+# JetUML requires JavaFX
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+if { ![is-loaded javax] } {
+    module load javax/21.0.10
+}
+
+# Set JetUML home
+setenv        JETUML_HOME $prefix
+setenv        JETUML_JAR  $prefix/JetUML-$version.jar
+
+# Create alias for easy launching
+set-alias     jetuml "java --module-path \$JAVAFX_HOME/lib --add-modules=javafx.controls,javafx.swing,java.desktop,java.prefs -jar $prefix/JetUML-$version.jar"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/jetuml/$version}
