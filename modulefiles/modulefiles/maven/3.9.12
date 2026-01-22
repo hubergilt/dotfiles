@@ -1,25 +1,30 @@
 #%Module1.0#####################################################################
 ##
-## modules modulefile
+## maven modulefile
 ##
 proc ModulesHelp { } {
         global version prefix
 
-        puts stderr "\tmodules - loads the modules software & application environment"
+        puts stderr "\tmaven - loads the Apache Maven environment"
         puts stderr "\n\tThis adds $prefix/* to several of the"
         puts stderr "\tenvironment variables."
         puts stderr "\n\tVersion $version\n"
 }
 
-module-whatis	"loads the modules environment"
+module-whatis	"loads the Apache Maven 3.9.12 environment"
 
 # for Tcl script use only
-set	version		3.2.5
+set	version		3.9.12
 set	prefix		/opt/maven/$version
 
+# Maven requires Java
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
 
-setenv          MAVEN_HOME	$prefix
-prepend-path    PATH   		  $prefix/bin
+setenv        MAVEN_HOME $prefix
+setenv        M2_HOME    $prefix
+prepend-path  PATH       $prefix/bin
 
 # enable module versioning modulepath
-#module use {~/modulefiles/rust/$version}
+#module use {~/modulefiles/maven/$version}
