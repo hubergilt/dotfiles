@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## eclipse modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\teclipse - loads the Eclipse IDE environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Eclipse IDE for Java EE Developers 2025-12 environment"
+
+# for Tcl script use only
+set	version		2025-12
+set	prefix		/opt/eclipse/$version
+
+# Eclipse requires Java
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv        ECLIPSE_HOME $prefix
+prepend-path  PATH         $prefix
+
+# Create alias for easy launching
+set-alias     eclipse      "$prefix/eclipse"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/eclipse/$version}
