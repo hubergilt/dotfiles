@@ -1,0 +1,34 @@
+#%Module1.0#####################################################################
+##
+## kroki modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tkroki - loads the Kroki diagram server environment"
+        puts stderr "\n\tThis sets up the environment to run Kroki"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Kroki standalone server 0.29.1 environment"
+
+# for Tcl script use only
+set	version		0.29.1
+set	prefix		/opt/kroki/$version
+
+# Kroki requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+# Set Kroki home
+setenv        KROKI_HOME $prefix
+prepend-path  PATH       $prefix
+
+# Create aliases for easy management
+set-alias     kroki-start    "java -jar $prefix/kroki-standalone-server-v$version.jar &"
+set-alias     kroki-start-fg "java -jar $prefix/kroki-standalone-server-v$version.jar"
+set-alias     kroki-stop     "pkill -f 'kroki-standalone-server'"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/kroki/$version}

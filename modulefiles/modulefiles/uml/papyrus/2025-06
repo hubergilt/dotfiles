@@ -19,7 +19,7 @@ set	prefix		/opt/papyrus/$version
 
 # Papyrus requires Java
 if { ![is-loaded java] } {
-    module load java/17.0.17
+    module load java/25.0.1
 }
 
 setenv        PAPYRUS_HOME $prefix

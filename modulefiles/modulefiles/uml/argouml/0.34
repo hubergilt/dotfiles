@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## argouml modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\targouml - loads the ArgoUML modeling environment"
+        puts stderr "\n\tThis sets up the environment to run ArgoUML"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the ArgoUML 0.34 environment"
+
+# for Tcl script use only
+set	version		0.34
+set	prefix		/opt/argouml/$version
+
+# ArgoUML requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+# Set ArgoUML home
+setenv        ARGOUML_HOME $prefix
+prepend-path  PATH         $prefix
+
+# Create alias for easy launching
+set-alias     argouml      "java -jar $prefix/argouml.jar"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/argouml/$version}

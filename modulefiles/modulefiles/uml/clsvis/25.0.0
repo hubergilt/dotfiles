@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## clsvis modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tclsvis - loads the Class Visualizer environment"
+        puts stderr "\n\tThis sets up the environment to run clsvis"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Class Visualizer 25.0.0 environment"
+
+# for Tcl script use only
+set	version		25.0.0
+set	prefix		/opt/clsvis/$version
+
+# clsvis requires Java
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+# Set clsvis home
+setenv        CLSVIS_HOME $prefix
+prepend-path  PATH        $prefix
+
+# Create alias for easy launching (must run from install directory)
+set-alias     clsvis      "cd $prefix && ./clsvis.sh"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/clsvis/$version}
