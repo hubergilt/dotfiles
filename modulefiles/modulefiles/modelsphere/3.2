@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## modelsphere modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tmodelsphere - loads the Open ModelSphere environment"
+        puts stderr "\n\tThis sets up the environment to run ModelSphere"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Open ModelSphere 3.2 environment"
+
+# for Tcl script use only
+set	version		3.2
+set	prefix		/opt/modelsphere/$version
+
+# ModelSphere requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+# Set ModelSphere home
+setenv        MODELSPHERE_HOME $prefix
+prepend-path  PATH             $prefix
+
+# Create alias for easy launching (must run from install directory)
+set-alias     modelsphere      "cd $prefix && ./modelsphere.sh"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/modelsphere/$version}

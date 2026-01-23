@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## papyrus modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tpapyrus - loads the Papyrus UML modeling environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Papyrus Desktop 2025-06 (7.1.0) environment"
+
+# for Tcl script use only
+set	version		2025-06
+set	prefix		/opt/papyrus/$version
+
+# Papyrus requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+setenv        PAPYRUS_HOME $prefix
+prepend-path  PATH         $prefix
+
+# Create alias for easy launching
+set-alias     papyrus      "$prefix/papyrus"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/papyrus/$version}
