@@ -1,0 +1,38 @@
+#%Module1.0#####################################################################
+##
+## mysql modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tmysql - loads the MySQL Server environment"
+        puts stderr "\n\tThis adds MySQL tools to your PATH"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis "loads the MySQL Server 8.0.45 environment"
+
+# for Tcl script use only
+set     version         8.0.45
+set     prefix          /opt/mysql/$version
+set     socket          /var/run/mysqld/mysqld-$version.sock
+
+# Paths
+prepend-path PATH            $prefix/bin
+prepend-path LD_LIBRARY_PATH $prefix/lib
+
+# Environment variables for shell functions / scripts
+setenv MYSQL_HOME   $prefix
+setenv MYSQL_SOCKET $socket
+
+# Create aliases for easy management using systemd
+set-alias     mysql-start     "sudo systemctl start mysql-8.0.45"
+set-alias     mysql-stop      "sudo systemctl stop mysql-8.0.45"
+set-alias     mysql-restart   "sudo systemctl restart mysql-8.0.45"
+set-alias     mysql-status    "sudo systemctl status mysql-8.0.45"
+set-alias     mysql-enable    "sudo systemctl enable mysql-8.0.45"
+set-alias     mysql-disable   "sudo systemctl disable mysql-8.0.45"
+set-alias     mysql-logs      "sudo journalctl -u mysql-8.0.45 -f"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/mysql/$version}
