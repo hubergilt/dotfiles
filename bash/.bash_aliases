@@ -9,4 +9,8 @@ mysql-connect() {
     local USER="${1:-root}"
     mysql -u "$USER" -p --socket="$MYSQL_SOCKET"
 }
-
+#mariadb aliases
+mariadb-connect() {
+    local USER="${1:-root}"
+    mariadb -u "$USER" -p --socket="$MARIADB_SOCKET"
+}

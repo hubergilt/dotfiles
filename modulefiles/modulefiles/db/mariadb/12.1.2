@@ -13,12 +13,17 @@ proc ModulesHelp { } {
 module-whatis	"loads the MariaDB Server 12.1.2 environment"
 
 # for Tcl script use only
-set	version		12.1.2
-set	prefix		/opt/mariadb/$version
+set version     12.1.2
+set prefix      /opt/mariadb/$version
+set socket      /var/run/mariadb/mariadb-$version.sock
 
+# Paths
 prepend-path  PATH            $prefix/bin
 prepend-path  LD_LIBRARY_PATH $prefix/lib
-setenv        MARIADB_HOME    $prefix
+
+# Environment variables for shell functions / scripts
+setenv MARIADB_HOME   $prefix
+setenv MARIADB_SOCKET $socket
 
 # Create aliases for easy management using systemd
 set-alias     mariadb-start   "sudo systemctl start mariadb-12.1.2"
@@ -28,7 +33,6 @@ set-alias     mariadb-status  "sudo systemctl status mariadb-12.1.2"
 set-alias     mariadb-enable  "sudo systemctl enable mariadb-12.1.2"
 set-alias     mariadb-disable "sudo systemctl disable mariadb-12.1.2"
 set-alias     mariadb-logs    "sudo journalctl -u mariadb-12.1.2 -f"
-set-alias     mariadb-connect "$prefix/bin/mariadb -u root -p"
 
 # enable module versioning modulepath
 #module use {~/modulefiles/mariadb/$version}
