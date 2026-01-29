@@ -1,0 +1,44 @@
+#%Module1.0#####################################################################
+##
+## slurm modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tslurm - loads the Slurm Workload Manager environment"
+        puts stderr "\n\tThis adds Slurm tools to your PATH"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Slurm Workload Manager 25.11.2 environment"
+
+# for Tcl script use only
+set	version		25.11.2
+set	prefix		/opt/slurm/$version
+
+# Slurm requires MariaDB
+if { ![is-loaded db/mariadb] } {
+    module load db/mariadb/12.1.2
+}
+
+prepend-path  PATH              $prefix/bin
+prepend-path  PATH              $prefix/sbin
+prepend-path  LD_LIBRARY_PATH   $prefix/lib
+prepend-path  MANPATH           $prefix/share/man
+setenv        SLURM_HOME        $prefix
+setenv        SLURM_CONF        /etc/slurm/slurm.conf
+
+# Create aliases for easy management
+set-alias     slurm-start       "sudo systemctl start munge slurmctld slurmd slurmdbd"
+set-alias     slurm-stop        "sudo systemctl stop munge slurmctld slurmd slurmdbd"
+set-alias     slurm-restart     "sudo systemctl restart munge slurmctld slurmd slurmdbd"
+set-alias     slurm-status      "sudo systemctl status munge slurmctld slurmd slurmdbd"
+set-alias     slurm-enable      "sudo systemctl enable munge slurmctld slurmd slurmdbd"
+set-alias     slurm-disable     "sudo systemctl disable munge slurmctld slurmd slurmdbd"
+set-alias     slurm-logs-ctld   "sudo journalctl -u slurmctld -f"
+set-alias     slurm-logs-d      "sudo journalctl -u slurmd -f"
+set-alias     slurm-logs-dbd    "sudo journalctl -u slurmdbd -f"
+set-alias     slurm-logs-munge  "sudo journalctl -u munge -f"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/slurm/$version}
