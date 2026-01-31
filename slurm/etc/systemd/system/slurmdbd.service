@@ -1,0 +1,22 @@
+[Unit]
+Description=Slurm DBD accounting daemon
+After=network.target munge.service mariadb-12.1.2.service
+Requires=munge.service mariadb-12.1.2.service
+ConditionPathExists=/etc/slurm/slurmdbd.conf
+
+[Service]
+Type=simple
+Environment="PATH=/opt/slurm/25.11.2/sbin:/opt/slurm/25.11.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="LD_LIBRARY_PATH=/opt/slurm/25.11.2/lib:/opt/mariadb/12.1.2/lib"
+ExecStart=/opt/slurm/25.11.2/sbin/slurmdbd -D -vvv
+ExecReload=/bin/kill -HUP $MAINPID
+User=root
+Group=root
+KillMode=process
+LimitNOFILE=131072
+LimitMEMLOCK=infinity
+LimitSTACK=infinity
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

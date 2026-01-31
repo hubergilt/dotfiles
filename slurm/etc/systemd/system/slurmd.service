@@ -1,0 +1,27 @@
+[Unit]
+Description=Slurm node daemon
+After=network.target munge.service slurmctld.service
+Requires=munge.service
+Wants=slurmctld.service
+ConditionPathExists=/etc/slurm/slurm.conf
+
+[Service]
+Type=simple
+Delegate=yes
+User=root
+Group=root
+RuntimeDirectory=slurm
+RuntimeDirectoryMode=0755
+Environment="PATH=/opt/slurm/25.11.2/sbin:/opt/slurm/25.11.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="LD_LIBRARY_PATH=/opt/slurm/25.11.2/lib:/opt/mariadb/12.1.2/lib"
+ExecStart=/opt/slurm/25.11.2/sbin/slurmd -D -vvv
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+LimitNOFILE=131072
+LimitMEMLOCK=infinity
+LimitSTACK=infinity
+Delegate=yes
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target
