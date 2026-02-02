@@ -1,0 +1,27 @@
+#%Module1.0#####################################################################
+##
+## guieditor modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tguieditor - loads the guiEditor environment"
+        puts stderr "\n\tThis sets up the environment to run guiEditor"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the guiEditor 2.0.0 environment"
+
+# for Tcl script use only
+set	version		2.0.0
+set	prefix		/opt/guieditor/$version
+
+# Set guiEditor home
+setenv        GUIEDITOR_HOME $prefix
+prepend-path  PATH           $prefix
+
+# Create alias for easy launching
+set-alias     guieditor      "$prefix/guiEditor"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/guieditor/$version}
