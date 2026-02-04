@@ -15,7 +15,7 @@ module-whatis	"loads the Amazon Corretto JDK 11.0.30 environment"
 
 # for Tcl script use only
 set	version		11.0.30
-set	prefix		/opt/java/amazon/$version
+set	prefix		/opt/java/amazon/jdk/$version
 
 setenv        JAVA_HOME $prefix
 prepend-path  PATH   	  $prefix/bin
