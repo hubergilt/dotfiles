@@ -24,6 +24,8 @@ if { ![is-loaded java] } {
 # Set ModelSphere home
 setenv        MODELSPHERE_HOME $prefix
 prepend-path  PATH             $prefix
+# Fix for TimSort IllegalArgumentException "Comparison method violates its general contract"
+setenv        JAVA_TOOL_OPTIONS "-Djava.util.Arrays.useLegacyMergeSort=true"
 
 # Create alias for easy launching (must run from install directory)
 set-alias     modelsphere      "cd $prefix && ./modelsphere.sh"
