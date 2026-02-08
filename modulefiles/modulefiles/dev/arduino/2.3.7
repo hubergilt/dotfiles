@@ -1,0 +1,27 @@
+#%Module1.0#####################################################################
+##
+## arduino modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tarduino - loads the Arduino IDE environment"
+        puts stderr "\n\tThis sets up the environment to run Arduino IDE"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Arduino IDE 2.3.7 environment"
+
+# for Tcl script use only
+set	version		2.3.7
+set	prefix		/opt/arduino/$version
+
+# Set Arduino home
+setenv        ARDUINO_HOME $prefix
+prepend-path  PATH         $prefix
+
+# Create alias for easy launching
+set-alias     arduino      "$prefix/arduino-ide"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/arduino/$version}
