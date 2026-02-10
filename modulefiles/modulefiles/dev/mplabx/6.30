@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## mplabx modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tmplabx - loads the MPLAB X IDE environment"
+        puts stderr "\n\tThis sets up the environment to run MPLAB X IDE"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the MPLAB X IDE 6.30 environment"
+
+# for Tcl script use only
+set	version		6.30
+set	prefix		/opt/microchip/mplabx/$version
+
+# MPLAB X requires Java
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+# Set MPLAB X home
+setenv        MPLABX_HOME $prefix
+prepend-path  PATH        $prefix/mplab_platform/bin
+
+# Create alias for easy launching
+set-alias     mplabx      "$prefix/mplab_platform/bin/mplab_ide"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/mplabx/$version}
