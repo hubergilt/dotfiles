@@ -1,0 +1,27 @@
+#%Module1.0#####################################################################
+##
+## esp-idf modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tesp-idf - loads the ESP-IDF framework environment"
+        puts stderr "\n\tAutomatically sources export.sh for complete setup"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the ESP-IDF 5.1.2 environment for ESP32 development"
+
+# for Tcl script use only
+set	version		5.1.2
+set	prefix		/opt/espressif/esp-idf
+
+# Set ESP-IDF path
+setenv        IDF_PATH $prefix
+
+# Source the export script when module loads
+# Note: This sets up all paths and environment variables
+puts stdout "source $prefix/export.sh;"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/esp-idf/$version}
