@@ -1,26 +1,27 @@
-#%Module1.0
+#%Module1.0#####################################################################
 ##
-## Talend Open Studio Data Integration modulefile
+## talend modulefile
 ##
 proc ModulesHelp { } {
-    puts stderr "This module loads Talend Open Studio for Data Integration"
-    puts stderr ""
-    puts stderr "Version: 8.0.1"
-    puts stderr ""
-    puts stderr "Usage: module load talend/8.0.1"
+        global version prefix
+
+        puts stderr "\ttalend - loads the Talend Open Studio environment"
+        puts stderr "\n\tThis sets up the environment to run Talend"
+        puts stderr "\n\tVersion $version\n"
 }
 
-module-whatis "Talend Open Studio for Data Integration 8.0.1"
+module-whatis	"loads the Talend Open Studio Data Integration 8.0.1 environment"
 
 # for Tcl script use only
 set	version		8.0.1
 set	prefix		/opt/talend/$version
-#set javahome    /usr/lib/jvm/java-11-openjdk-amd64
 
-prepend-path  PATH              $prefix
-#prepend-path  PATH              $javahome/bin
-prepend-path  LD_LIBRARY_PATH   $prefix/configuration
+# Set Talend home
+setenv        TALEND_HOME $prefix
+prepend-path  PATH        $prefix
 
-setenv TALEND_HOME $prefix
-setenv TALEND_VERSION $version
-#setenv JAVA_HOME $javahome
+# Create alias for easy launching (suppress incubator warnings)
+set-alias     talend      "$prefix/TOS_DI-linux-gtk-x86_64 2>&1 | grep -v 'WARNING: Using incubator modules'"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/talend/$version}
