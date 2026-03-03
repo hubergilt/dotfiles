@@ -1,0 +1,38 @@
+#%Module1.0#####################################################################
+##
+## nifi modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tnifi - loads the Apache NiFi environment"
+        puts stderr "\n\tThis sets up the environment to run NiFi"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Apache NiFi 2.8.0 environment"
+
+# for Tcl script use only
+set	version		2.8.0
+set	prefix		/opt/nifi/$version
+
+# NiFi requires Java
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+# Set NiFi home
+setenv        NIFI_HOME $prefix
+prepend-path  PATH      $prefix/bin
+
+# Create aliases for easy management
+set-alias     nifi-start   "$prefix/bin/nifi.sh start"
+set-alias     nifi-stop    "$prefix/bin/nifi.sh stop"
+set-alias     nifi-restart "$prefix/bin/nifi.sh restart"
+set-alias     nifi-status  "$prefix/bin/nifi.sh status"
+set-alias     nifi-install "$prefix/bin/nifi.sh install"
+set-alias     nifi-run     "$prefix/bin/nifi.sh run"
+set-alias     nifi-logs    "tail -f $prefix/logs/nifi-app.log"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/nifi/$version}

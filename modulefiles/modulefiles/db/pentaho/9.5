@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## pentaho modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tpentaho - loads the Pentaho Data Integration environment"
+        puts stderr "\n\tThis sets up the environment to run PDI/Kettle"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Pentaho Data Integration CE 9.5 environment"
+
+# for Tcl script use only
+set	version		9.5
+set	prefix		/opt/pentaho/$version
+
+# Set PDI home - use user's home for .kettle directory
+setenv        PDI_HOME        $prefix
+setenv        KETTLE_HOME     $::env(HOME)/.kettle
+prepend-path  PATH            $prefix
+
+# Create aliases for easy launching
+set-alias     spoon           "$prefix/spoon.sh"
+set-alias     pan             "$prefix/pan.sh"
+set-alias     kitchen         "$prefix/kitchen.sh"
+set-alias     carte           "$prefix/carte.sh"
+set-alias     encr            "$prefix/encr.sh"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/pentaho/$version}
