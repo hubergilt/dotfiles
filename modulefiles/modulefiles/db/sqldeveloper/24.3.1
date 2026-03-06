@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## sqldeveloper modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tsqldeveloper - loads the Oracle SQL Developer environment"
+        puts stderr "\n\tThis sets up the environment to run SQL Developer"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Oracle SQL Developer 24.3.1 environment"
+
+# for Tcl script use only
+set	version		24.3.1
+set	prefix		/opt/sqldeveloper/$version
+
+# SQL Developer requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+# Set SQL Developer home
+setenv        SQLDEVELOPER_HOME $prefix
+prepend-path  PATH              $prefix
+
+# Create alias for easy launching
+set-alias     sqldeveloper      "$prefix/sqldeveloper.sh"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/sqldeveloper/$version}
