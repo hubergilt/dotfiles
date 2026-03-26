@@ -1,0 +1,28 @@
+#%Module1.0#####################################################################
+##
+## plantuml modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tplantuml - loads the PlantUML environment"
+        puts stderr "\n\tThis sets up the environment to run PlantUML"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the PlantUML environment"
+
+# for Tcl script use only
+set	version		1.2025.0
+set	prefix		/opt/plantuml/$version
+
+# Set PlantUML environment
+setenv        PLANTUML_HOME $prefix
+setenv        PLANTUML_JAR  $prefix/plantuml.jar
+prepend-path  PATH          $prefix
+
+# Create alias for convenience
+set-alias     plantuml      "$prefix/plantuml"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/plantuml/$version}

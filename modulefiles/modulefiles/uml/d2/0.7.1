@@ -1,0 +1,24 @@
+#%Module1.0#####################################################################
+##
+## d2 modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\td2 - loads the D2 diagramming tool environment"
+        puts stderr "\n\tThis sets up the environment to run D2"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the D2 v0.7.1 environment"
+
+# for Tcl script use only
+set	version		0.7.1
+set	prefix		/opt/d2/$version
+
+# Set D2 environment
+setenv        D2_HOME $prefix
+prepend-path  PATH    $prefix/bin
+
+# enable module versioning modulepath
+#module use {~/modulefiles/d2/$version}

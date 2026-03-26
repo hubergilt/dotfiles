@@ -144,3 +144,5 @@ export MODULEPATH=$MODULEPATH:$HOME/modulefiles
 if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi
 #default editor
 export EDITOR=nvim
+#yarn
+export PATH="$HOME/.npm-global/lib/node_modules/yarn/bin:$PATH"
