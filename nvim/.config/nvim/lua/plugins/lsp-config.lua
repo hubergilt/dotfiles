@@ -64,7 +64,7 @@ return {
 					"clang-format",
 					"clangd",
 					"xmlformatter",
-					"rustfmt",
+					--"rustfmt",
 					"black",
 					"isort",
 					"autopep8",
