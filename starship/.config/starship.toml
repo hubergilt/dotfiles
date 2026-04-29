@@ -4,6 +4,8 @@ format = """
 [](surface0)\
 $os\
 $username\
+$hostname\
+$localip\
 [](bg:peach fg:surface0)\
 $directory\
 [](fg:peach bg:green)\
@@ -92,6 +94,7 @@ CentOS = ""
 Debian = "󰣚"
 Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
+Pop = ""
 
 [username]
 show_always = true
@@ -188,3 +191,14 @@ vimcmd_symbol = '[](bold fg:creen)'
 vimcmd_replace_one_symbol = '[](bold fg:purple)'
 vimcmd_replace_symbol = '[](bold fg:purple)'
 vimcmd_visual_symbol = '[](bold fg:lavender)'
+
+[hostname]
+ssh_only = true
+format = "[$hostname ]($style)"
+style = "bold yellow"
+
+[localip]
+disabled = false
+ssh_only = true
+format = "[$localipv4 ]($style)"
+style = "bold red"
