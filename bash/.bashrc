@@ -146,5 +146,7 @@ if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi
 export EDITOR=nvim
 #yarn
 export PATH="$HOME/.npm-global/lib/node_modules/yarn/bin:$PATH"
-# opencode
+#opencode
 export PATH=/home/huber/.opencode/bin:$PATH
+#Platform Abstraction for x11 use xcb
+QT_QPA_PLATFORM=xcb
