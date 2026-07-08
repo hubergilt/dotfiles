@@ -126,7 +126,7 @@ return {
 				capabilities = capabilities,
 				settings = {
 					python = {
-						--pythonPath = python_path,
+						pythonPath = python_path,
 						analysis = {
 							autoSearchPaths = true,
 							useLibraryCodeForTypes = true,
@@ -186,6 +186,7 @@ return {
 					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
 					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 					vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, opts)
+					vim.keymap.set("n", "gb", "<C-o>", opts)
 				end,
 			})
 		end,
