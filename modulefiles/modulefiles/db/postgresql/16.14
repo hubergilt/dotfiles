@@ -1,9 +1,9 @@
 #%Module1.0
 proc ModulesHelp { } {
-    puts stderr "PostgreSQL 16.11"
+    puts stderr "PostgreSQL 16.14"
 }
 
-module-whatis "PostgreSQL 16.11 database"
+module-whatis "PostgreSQL 16.14 database"
 
 conflict postgresql
 
@@ -16,3 +16,4 @@ prepend-path MANPATH         /usr/share/postgresql/$pgversion/man
 
 setenv PGDATA /var/lib/postgresql/$pgversion/main
 setenv PGHOME $basedir
+setenv PGCONFDIR /etc/postgresql/$pgversion/main

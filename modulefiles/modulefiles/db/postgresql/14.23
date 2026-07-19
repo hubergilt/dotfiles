@@ -1,13 +1,13 @@
 #%Module1.0
 proc ModulesHelp { } {
-    puts stderr "PostgreSQL 18.1"
+    puts stderr "PostgreSQL 14.23"
 }
 
-module-whatis "PostgreSQL 18.1 database"
+module-whatis "PostgreSQL 14.23 database"
 
 conflict postgresql
 
-set pgversion 18
+set pgversion 14
 set basedir /usr/lib/postgresql/$pgversion
 
 prepend-path PATH            $basedir/bin
@@ -16,3 +16,4 @@ prepend-path MANPATH         /usr/share/postgresql/$pgversion/man
 
 setenv PGDATA /var/lib/postgresql/$pgversion/main
 setenv PGHOME $basedir
+setenv PGCONFDIR /etc/postgresql/$pgversion/main

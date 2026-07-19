@@ -1,9 +1,9 @@
 # PostgreSQL aliases
-alias pgstart='sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA -l $PGDATA/logfile start'
-alias pgstop='sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA stop'
-alias pgstatus='sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA status'
-alias pgrestart='sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA -l $PGDATA/logfile restart'
-alias pgsql='sudo -u postgres $PGHOME/bin/psql'
+alias pgstart='cd /tmp && sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA -o "-c config_file=$PGCONFDIR/postgresql.conf" -l $PGDATA/logfile start && cd $HOME'
+alias pgstop='cd /tmp && sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA stop && cd $HOME'
+alias pgstatus='cd /tmp && sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA status && cd $HOME'
+alias pgrestart='cd /tmp && sudo -u postgres $PGHOME/bin/pg_ctl -D $PGDATA -o "-c config_file=$PGCONFDIR/postgresql.conf" -l $PGDATA/logfile restart && cd $HOME'
+alias pgsql='cd /tmp && sudo -u postgres $PGHOME/bin/psql && cd $HOME'
 #msyql aliases
 mysql-connect() {
     local USER="${1:-root}"
