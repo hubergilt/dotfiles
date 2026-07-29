@@ -1,0 +1,16 @@
+[Unit]
+Description=MySQL 8.0.45 Server
+After=network.target
+
+[Service]
+Type=forking
+User=mysql
+Group=mysql
+ExecStart=/opt/mysql/8.0.45/bin/mysqld --defaults-file=/etc/mysql-8.0.45/my.cnf --daemonize
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

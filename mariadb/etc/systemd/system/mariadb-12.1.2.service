@@ -1,0 +1,17 @@
+[Unit]
+Description=MariaDB 12.1.2 Server
+After=network.target
+
+[Service]
+Type=notify
+User=mysql
+Group=mysql
+ExecStart=/opt/mariadb/12.1.2/bin/mariadbd --defaults-file=/etc/mariadb-12.1.2/my.cnf
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStartSec=60
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
