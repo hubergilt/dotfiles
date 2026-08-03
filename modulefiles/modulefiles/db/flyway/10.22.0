@@ -3,15 +3,15 @@
 ##
 proc ModulesHelp { } {
     puts stderr "Flyway - Database migration tool"
-    puts stderr "Version: 10.21.0"
+    puts stderr "Version: 10.22.0"
     puts stderr ""
     puts stderr "Usage: flyway [command] [options]"
     puts stderr "Commands: migrate, clean, info, validate, baseline, repair"
 }
 
-module-whatis "Flyway database migration tool version 10.21.0"
+module-whatis "Flyway database migration tool version 10.22.0"
 
-set version 10.21.0
+set version 10.22.0
 set root /opt/flyway/$version
 
 # Check if directory exists

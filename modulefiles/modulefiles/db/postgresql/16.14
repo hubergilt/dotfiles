@@ -5,7 +5,7 @@ proc ModulesHelp { } {
 
 module-whatis "PostgreSQL 16.14 database"
 
-conflict postgresql
+conflict db/postgresql
 
 set pgversion 16
 set basedir /usr/lib/postgresql/$pgversion
@@ -17,3 +17,44 @@ prepend-path MANPATH         /usr/share/postgresql/$pgversion/man
 setenv PGDATA /var/lib/postgresql/$pgversion/main
 setenv PGHOME $basedir
 setenv PGCONFDIR /etc/postgresql/$pgversion/main
+
+# PostgreSQL convenience functions (moved from ~/.bash_aliases)
+set-function pgstart {
+    local PGUSER="${1:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    cd /tmp || return 1
+    sudo -u "$PGUSER" $PGHOME/bin/pg_ctl -D $PGDATA -o "-c config_file=$PGCONFDIR/postgresql.conf" -l $PGDATA/logfile start
+    cd "$_pwd" || return 1
+}
+
+set-function pgstop {
+    local PGUSER="${1:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    cd /tmp || return 1
+    sudo -u "$PGUSER" $PGHOME/bin/pg_ctl -D $PGDATA stop
+    cd "$_pwd" || return 1
+}
+
+set-function pgstatus {
+    local PGUSER="${1:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    cd /tmp || return 1
+    sudo -u "$PGUSER" $PGHOME/bin/pg_ctl -D $PGDATA status
+    cd "$_pwd" || return 1
+}
+
+set-function pgrestart {
+    local PGUSER="${1:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    cd /tmp || return 1
+    sudo -u "$PGUSER" $PGHOME/bin/pg_ctl -D $PGDATA -o "-c config_file=$PGCONFDIR/postgresql.conf" -l $PGDATA/logfile restart
+    cd "$_pwd" || return 1
+}
+
+set-function pgsql {
+    local PGUSER="${1:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    cd /tmp || return 1
+    sudo -u "$PGUSER" $PGHOME/bin/psql
+    cd "$_pwd" || return 1
+}
