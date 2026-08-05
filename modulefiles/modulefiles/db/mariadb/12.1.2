@@ -12,6 +12,8 @@ proc ModulesHelp { } {
 
 module-whatis	"loads the MariaDB Server 12.1.2 environment"
 
+conflict db/mariadb
+
 # for Tcl script use only
 set version     12.1.2
 set prefix      /opt/mariadb/$version
@@ -24,6 +26,12 @@ prepend-path  LD_LIBRARY_PATH $prefix/lib
 # Environment variables for shell functions / scripts
 setenv MARIADB_HOME   $prefix
 setenv MARIADB_SOCKET $socket
+
+# Create a function for connecting (needs argument support, so set-function not set-alias)
+set-function mariadb-connect {
+    local USER="${1:-root}"
+    mariadb -u "$USER" -p --socket="$MARIADB_SOCKET"
+}
 
 # Create aliases for easy management using systemd
 set-alias     mariadb-start   "sudo systemctl start mariadb-12.1.2"

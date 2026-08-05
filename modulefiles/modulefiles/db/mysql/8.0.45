@@ -12,6 +12,8 @@ proc ModulesHelp { } {
 
 module-whatis "loads the MySQL Server 8.0.45 environment"
 
+conflict db/mysql
+
 # for Tcl script use only
 set     version         8.0.45
 set     prefix          /opt/mysql/$version
@@ -24,6 +26,12 @@ prepend-path LD_LIBRARY_PATH $prefix/lib
 # Environment variables for shell functions / scripts
 setenv MYSQL_HOME   $prefix
 setenv MYSQL_SOCKET $socket
+
+# Create a function for connecting (needs argument support, so set-function not set-alias)
+set-function mysql-connect {
+    local USER="${1:-root}"
+    mysql -u "$USER" -p --socket="$MYSQL_SOCKET"
+}
 
 # Create aliases for easy management using systemd
 set-alias     mysql-start     "sudo systemctl start mysql-8.0.45"
