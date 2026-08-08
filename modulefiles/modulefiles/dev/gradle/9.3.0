@@ -18,6 +18,9 @@ module-whatis	"loads the Gradle 9.3.0 build environment"
 set	version     9.3.0
 set	prefix      /opt/gradle/$version
 
+# Conflict with other Gradle versions
+conflict dev/gradle
+
 # Environment setup
 setenv          GRADLE_HOME $prefix
 prepend-path    PATH        $prefix/bin

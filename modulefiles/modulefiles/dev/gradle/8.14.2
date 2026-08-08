@@ -1,0 +1,27 @@
+#%Module1.0#####################################################################
+##
+## gradle modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tgradle - loads the Gradle build environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Gradle 8.14.2 build environment"
+
+# for Tcl script use only
+set	version		8.14.2
+set	prefix		/opt/gradle/$version
+
+# Conflict with other Gradle versions
+conflict dev/gradle
+
+setenv        GRADLE_HOME $prefix
+prepend-path  PATH        $prefix/bin
+
+# enable module versioning modulepath
+#module use {~/modulefiles/dev/gradle/$version}
