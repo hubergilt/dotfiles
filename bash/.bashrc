@@ -155,3 +155,5 @@ if ! pgrep -f "fswatch.*rotate_downloads" > /dev/null; then
     fswatch -0 --format="%p" -e "\.part$" -e "\.download$" "$HOME/Downloads" | xargs -0 -n 1 ~/dotfiles/fswatch/rotate_downloads.sh > /dev/null 2>&1 &
     disown
 fi
+#rbenv
+eval "$(rbenv init - bash)"
