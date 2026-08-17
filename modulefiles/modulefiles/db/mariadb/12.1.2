@@ -34,6 +34,90 @@ set-function mariadb-connect {
     mariadb -u "$USER" -p --socket="$MARIADB_SOCKET"
 }
 
+# Create/drop a database (needs argument support, so set-function not set-alias)
+set-function mariadb-createdb {
+    local DB="$1"
+    local USER="${2:-root}"
+    if [ -z "$DB" ]; then
+        echo "Usage: mariadb-createdb <dbname> [user]"
+        return 1
+    fi
+    if mariadb -u "$USER" -p --socket="$MARIADB_SOCKET" -e "CREATE DATABASE \`$DB\`;"; then
+        echo "Database '$DB' created successfully."
+    else
+        echo "Failed to create database '$DB'."
+        return 1
+    fi
+}
+
+set-function mariadb-dropdb {
+    local DB="$1"
+    local USER="${2:-root}"
+    if [ -z "$DB" ]; then
+        echo "Usage: mariadb-dropdb <dbname> [user]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop database '$DB'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        if mariadb -u "$USER" -p --socket="$MARIADB_SOCKET" -e "DROP DATABASE \`$DB\`;"; then
+            echo "Database '$DB' dropped successfully."
+        else
+            echo "Failed to drop database '$DB'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
+# Create/drop a MariaDB user
+set-function mariadb-createuser {
+    local NEWUSER="$1"
+    local NEWPASS="$2"
+    local DB="$3"
+    local HOST="${4:-localhost}"
+    local ADMINUSER="${5:-root}"
+    if [ -z "$NEWUSER" ] || [ -z "$NEWPASS" ]; then
+        echo "Usage: mariadb-createuser <newuser> <newpassword> [dbname] [host] [adminuser]"
+        return 1
+    fi
+    if mariadb -u "$ADMINUSER" -p --socket="$MARIADB_SOCKET" -e "CREATE USER '$NEWUSER'@'$HOST' IDENTIFIED BY '$NEWPASS';"; then
+        echo "User '$NEWUSER'@'$HOST' created successfully."
+    else
+        echo "Failed to create user '$NEWUSER'@'$HOST'."
+        return 1
+    fi
+    if [ -n "$DB" ]; then
+        if mariadb -u "$ADMINUSER" -p --socket="$MARIADB_SOCKET" -e "GRANT ALL PRIVILEGES ON \`$DB\`.* TO '$NEWUSER'@'$HOST'; FLUSH PRIVILEGES;"; then
+            echo "Granted all privileges on '$DB' to '$NEWUSER'@'$HOST'."
+        else
+            echo "Failed to grant privileges on '$DB' to '$NEWUSER'@'$HOST'."
+            return 1
+        fi
+    fi
+}
+
+set-function mariadb-dropuser {
+    local TARGETUSER="$1"
+    local HOST="${2:-localhost}"
+    local ADMINUSER="${3:-root}"
+    if [ -z "$TARGETUSER" ]; then
+        echo "Usage: mariadb-dropuser <user> [host] [adminuser]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop user '$TARGETUSER'@'$HOST'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        if mariadb -u "$ADMINUSER" -p --socket="$MARIADB_SOCKET" -e "DROP USER '$TARGETUSER'@'$HOST';"; then
+            echo "User '$TARGETUSER'@'$HOST' dropped successfully."
+        else
+            echo "Failed to drop user '$TARGETUSER'@'$HOST'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
 # Create aliases for easy management using systemd
 set-alias     mariadb-start   "sudo systemctl start mariadb-12.1.2"
 set-alias     mariadb-stop    "sudo systemctl stop mariadb-12.1.2"
@@ -42,6 +126,40 @@ set-alias     mariadb-status  "sudo systemctl status mariadb-12.1.2"
 set-alias     mariadb-enable  "sudo systemctl enable mariadb-12.1.2"
 set-alias     mariadb-disable "sudo systemctl disable mariadb-12.1.2"
 set-alias     mariadb-logs    "sudo journalctl -u mariadb-12.1.2 -f"
+
+# Help command listing all available custom functions/aliases
+set-function mariadb-help {
+    echo "MariaDB module - available commands:"
+    echo ""
+    echo "  Connection:"
+    echo "    mariadb-connect [user]                                    Connect to MariaDB (default user: root)"
+    echo ""
+    echo "  Database management:"
+    echo "    mariadb-createdb <dbname> [user]                          Create a database"
+    echo "    mariadb-dropdb <dbname> [user]                            Drop a database (asks for confirmation)"
+    echo ""
+    echo "  User management:"
+    echo "    mariadb-createuser <newuser> <newpass> [dbname] [host] [adminuser]"
+    echo "                                                               Create a user; optionally grant it all"
+    echo "                                                               privileges on a database (default host: localhost)"
+    echo "    mariadb-dropuser <user> [host] [adminuser]                Drop a user (asks for confirmation)"
+    echo ""
+    echo "  Service management (systemd):"
+    echo "    mariadb-start                                             Start the MariaDB service"
+    echo "    mariadb-stop                                              Stop the MariaDB service"
+    echo "    mariadb-restart                                           Restart the MariaDB service"
+    echo "    mariadb-status                                            Show service status"
+    echo "    mariadb-enable                                            Enable service at boot"
+    echo "    mariadb-disable                                           Disable service at boot"
+    echo "    mariadb-logs                                              Follow service logs"
+    echo ""
+    echo "  Help:"
+    echo "    mariadb-help                                              Show this help message"
+    echo "    mdbh                                                      Alias for mariadb-help"
+}
+
+# Short alias for the help function above
+set-alias mdbh "mariadb-help"
 
 # enable module versioning modulepath
 #module use {~/modulefiles/mariadb/$version}
