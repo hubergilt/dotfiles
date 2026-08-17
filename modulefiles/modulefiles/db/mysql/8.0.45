@@ -34,6 +34,90 @@ set-function mysql-connect {
     mysql -u "$USER" -p --socket="$MYSQL_SOCKET"
 }
 
+# Create/drop a database (needs argument support, so set-function not set-alias)
+set-function mysql-createdb {
+    local DB="$1"
+    local USER="${2:-root}"
+    if [ -z "$DB" ]; then
+        echo "Usage: mysql-createdb <dbname> [user]"
+        return 1
+    fi
+    if mysql -u "$USER" -p --socket="$MYSQL_SOCKET" -e "CREATE DATABASE \`$DB\`;"; then
+        echo "Database '$DB' created successfully."
+    else
+        echo "Failed to create database '$DB'."
+        return 1
+    fi
+}
+
+set-function mysql-dropdb {
+    local DB="$1"
+    local USER="${2:-root}"
+    if [ -z "$DB" ]; then
+        echo "Usage: mysql-dropdb <dbname> [user]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop database '$DB'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        if mysql -u "$USER" -p --socket="$MYSQL_SOCKET" -e "DROP DATABASE \`$DB\`;"; then
+            echo "Database '$DB' dropped successfully."
+        else
+            echo "Failed to drop database '$DB'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
+# Create/drop a MySQL user
+set-function mysql-createuser {
+    local NEWUSER="$1"
+    local NEWPASS="$2"
+    local DB="$3"
+    local HOST="${4:-localhost}"
+    local ADMINUSER="${5:-root}"
+    if [ -z "$NEWUSER" ] || [ -z "$NEWPASS" ]; then
+        echo "Usage: mysql-createuser <newuser> <newpassword> [dbname] [host] [adminuser]"
+        return 1
+    fi
+    if mysql -u "$ADMINUSER" -p --socket="$MYSQL_SOCKET" -e "CREATE USER '$NEWUSER'@'$HOST' IDENTIFIED BY '$NEWPASS';"; then
+        echo "User '$NEWUSER'@'$HOST' created successfully."
+    else
+        echo "Failed to create user '$NEWUSER'@'$HOST'."
+        return 1
+    fi
+    if [ -n "$DB" ]; then
+        if mysql -u "$ADMINUSER" -p --socket="$MYSQL_SOCKET" -e "GRANT ALL PRIVILEGES ON \`$DB\`.* TO '$NEWUSER'@'$HOST'; FLUSH PRIVILEGES;"; then
+            echo "Granted all privileges on '$DB' to '$NEWUSER'@'$HOST'."
+        else
+            echo "Failed to grant privileges on '$DB' to '$NEWUSER'@'$HOST'."
+            return 1
+        fi
+    fi
+}
+
+set-function mysql-dropuser {
+    local TARGETUSER="$1"
+    local HOST="${2:-localhost}"
+    local ADMINUSER="${3:-root}"
+    if [ -z "$TARGETUSER" ]; then
+        echo "Usage: mysql-dropuser <user> [host] [adminuser]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop user '$TARGETUSER'@'$HOST'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        if mysql -u "$ADMINUSER" -p --socket="$MYSQL_SOCKET" -e "DROP USER '$TARGETUSER'@'$HOST';"; then
+            echo "User '$TARGETUSER'@'$HOST' dropped successfully."
+        else
+            echo "Failed to drop user '$TARGETUSER'@'$HOST'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
 # Create aliases for easy management using systemd
 set-alias     mysql-start     "sudo systemctl start mysql-8.0.45"
 set-alias     mysql-stop      "sudo systemctl stop mysql-8.0.45"
@@ -42,6 +126,36 @@ set-alias     mysql-status    "sudo systemctl status mysql-8.0.45"
 set-alias     mysql-enable    "sudo systemctl enable mysql-8.0.45"
 set-alias     mysql-disable   "sudo systemctl disable mysql-8.0.45"
 set-alias     mysql-logs      "sudo journalctl -u mysql-8.0.45 -f"
+
+# Help command listing all available custom functions/aliases
+set-function mysql-help {
+    echo "MySQL module - available commands:"
+    echo ""
+    echo "  Connection:"
+    echo "    mysql-connect [user]                                      Connect to MySQL (default user: root)"
+    echo ""
+    echo "  Database management:"
+    echo "    mysql-createdb <dbname> [user]                            Create a database"
+    echo "    mysql-dropdb <dbname> [user]                              Drop a database (asks for confirmation)"
+    echo ""
+    echo "  User management:"
+    echo "    mysql-createuser <newuser> <newpass> [dbname] [host] [adminuser]"
+    echo "                                                               Create a user; optionally grant it all"
+    echo "                                                               privileges on a database (default host: localhost)"
+    echo "    mysql-dropuser <user> [host] [adminuser]                  Drop a user (asks for confirmation)"
+    echo ""
+    echo "  Service management (systemd):"
+    echo "    mysql-start                                               Start the MySQL service"
+    echo "    mysql-stop                                                Stop the MySQL service"
+    echo "    mysql-restart                                             Restart the MySQL service"
+    echo "    mysql-status                                              Show service status"
+    echo "    mysql-enable                                              Enable service at boot"
+    echo "    mysql-disable                                             Disable service at boot"
+    echo "    mysql-logs                                                Follow service logs"
+    echo ""
+    echo "  Help:"
+    echo "    mysql-help                                                Show this help message"
+}
 
 # enable module versioning modulepath
 #module use {~/modulefiles/mysql/$version}

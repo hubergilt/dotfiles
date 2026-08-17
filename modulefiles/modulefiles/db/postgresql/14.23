@@ -58,3 +58,144 @@ set-function pgsql {
     sudo -u "$PGUSER" $PGHOME/bin/psql
     cd "$_pwd" || return 1
 }
+
+# Connect as an arbitrary role over the network with a password prompt
+# (needs argument support, so set-function not set-alias)
+set-function pgconnect {
+    local DBUSER="${1:-postgres}"
+    local DB="${2:-$DBUSER}"
+    local HOST="${3:-localhost}"
+    $PGHOME/bin/psql -U "$DBUSER" -d "$DB" -h "$HOST" -W
+}
+
+# Create/drop a database (needs argument support, so set-function not set-alias)
+set-function pgcreatedb {
+    local DB="$1"
+    local OWNER="${2:-postgres}"
+    local PGUSER="${3:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    if [ -z "$DB" ]; then
+        echo "Usage: pgcreatedb <dbname> [owner] [pguser]"
+        return 1
+    fi
+    cd /tmp || return 1
+    if sudo -u "$PGUSER" $PGHOME/bin/psql -c "CREATE DATABASE \"$DB\" OWNER \"$OWNER\";"; then
+        echo "Database '$DB' created successfully (owner: $OWNER)."
+    else
+        echo "Failed to create database '$DB'."
+        cd "$_pwd" || return 1
+        return 1
+    fi
+    cd "$_pwd" || return 1
+}
+
+set-function pgdropdb {
+    local DB="$1"
+    local PGUSER="${2:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    if [ -z "$DB" ]; then
+        echo "Usage: pgdropdb <dbname> [pguser]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop database '$DB'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        cd /tmp || return 1
+        if sudo -u "$PGUSER" $PGHOME/bin/psql -c "DROP DATABASE \"$DB\";"; then
+            echo "Database '$DB' dropped successfully."
+        else
+            echo "Failed to drop database '$DB'."
+            cd "$_pwd" || return 1
+            return 1
+        fi
+        cd "$_pwd" || return 1
+    else
+        echo "Aborted."
+    fi
+}
+
+# Create/drop a PostgreSQL role (needs argument support, so set-function not set-alias)
+set-function pgcreateuser {
+    local NEWUSER="$1"
+    local NEWPASS="$2"
+    local DB="$3"
+    local PGUSER="${4:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    if [ -z "$NEWUSER" ] || [ -z "$NEWPASS" ]; then
+        echo "Usage: pgcreateuser <newuser> <newpassword> [dbname] [pguser]"
+        return 1
+    fi
+    cd /tmp || return 1
+    if sudo -u "$PGUSER" $PGHOME/bin/psql -c "CREATE ROLE \"$NEWUSER\" WITH LOGIN PASSWORD '$NEWPASS';"; then
+        echo "Role '$NEWUSER' created successfully."
+    else
+        echo "Failed to create role '$NEWUSER'."
+        cd "$_pwd" || return 1
+        return 1
+    fi
+    if [ -n "$DB" ]; then
+        if sudo -u "$PGUSER" $PGHOME/bin/psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$DB\" TO \"$NEWUSER\";"; then
+            echo "Granted all privileges on '$DB' to '$NEWUSER'."
+        else
+            echo "Failed to grant privileges on '$DB' to '$NEWUSER'."
+            cd "$_pwd" || return 1
+            return 1
+        fi
+    fi
+    cd "$_pwd" || return 1
+}
+
+set-function pgdropuser {
+    local TARGETUSER="$1"
+    local PGUSER="${2:-postgres}"
+    local _pwd; _pwd="$(pwd)"
+    if [ -z "$TARGETUSER" ]; then
+        echo "Usage: pgdropuser <user> [pguser]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop role '$TARGETUSER'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        cd /tmp || return 1
+        if sudo -u "$PGUSER" $PGHOME/bin/psql -c "DROP ROLE \"$TARGETUSER\";"; then
+            echo "Role '$TARGETUSER' dropped successfully."
+        else
+            echo "Failed to drop role '$TARGETUSER'."
+            cd "$_pwd" || return 1
+            return 1
+        fi
+        cd "$_pwd" || return 1
+    else
+        echo "Aborted."
+    fi
+}
+
+# Help command listing all available custom functions
+set-function pghelp {
+    echo "PostgreSQL module - available commands:"
+    echo ""
+    echo "  Connection:"
+    echo "    pgsql [pguser]                                            Connect locally via OS peer auth (sudo -u pguser psql; default user: postgres)"
+    echo "    pgconnect [dbuser] [dbname] [host]                        Connect over the network as a role, password prompt"
+    echo "                                                               (default user/db: postgres, default host: localhost)"
+    echo ""
+    echo "  Database management:"
+    echo "    pgcreatedb <dbname> [owner] [pguser]                      Create a database (default owner: postgres)"
+    echo "    pgdropdb <dbname> [pguser]                                Drop a database (asks for confirmation)"
+    echo ""
+    echo "  Role management:"
+    echo "    pgcreateuser <newuser> <newpass> [dbname] [pguser]        Create a role; optionally grant it all"
+    echo "                                                               privileges on a database"
+    echo "    pgdropuser <user> [pguser]                                Drop a role (asks for confirmation)"
+    echo ""
+    echo "  Service management:"
+    echo "    pgstart [pguser]                                          Start the PostgreSQL service"
+    echo "    pgstop [pguser]                                           Stop the PostgreSQL service"
+    echo "    pgrestart [pguser]                                        Restart the PostgreSQL service"
+    echo "    pgstatus [pguser]                                         Show service status"
+    echo ""
+    echo "  Help:"
+    echo "    pghelp                                                    Show this help message"
+    echo "    pgh                                                       Alias for pghelp"
+}
+
+# Short alias for the help function above
+set-alias pgh "pghelp"

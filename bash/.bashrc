@@ -121,7 +121,8 @@ eval "$(starship init bash)"
 #rust
 . "$HOME/.cargo/env"
 #go
-export PATH=$HOME/go/bin:$PATH
+export PATH=/usr/lib/go-1.23/bin:$PATH
+export PATH=/home/huber/go/bin:$PATH
 #pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
@@ -157,3 +158,6 @@ if ! pgrep -f "fswatch.*rotate_downloads" > /dev/null; then
 fi
 #rbenv
 eval "$(rbenv init - bash)"
+
+# kimi-code
+export PATH="/home/huber/.kimi-code/bin:$PATH"
