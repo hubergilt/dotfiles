@@ -1,0 +1,12 @@
+#%Module
+module-whatis   {loads the Apache NiFi 2.11.0 environment}
+module          load java/25.0.1
+setenv          NIFI_HOME /opt/nifi/2.11.0
+prepend-path    PATH /opt/nifi/2.11.0/bin
+set-alias       nifi-start {/opt/nifi/2.11.0/bin/nifi.sh start}
+set-alias       nifi-stop {/opt/nifi/2.11.0/bin/nifi.sh stop}
+set-alias       nifi-restart {/opt/nifi/2.11.0/bin/nifi.sh restart}
+set-alias       nifi-status {/opt/nifi/2.11.0/bin/nifi.sh status}
+set-alias       nifi-install {/opt/nifi/2.11.0/bin/nifi.sh install}
+set-alias       nifi-run {/opt/nifi/2.11.0/bin/nifi.sh run}
+set-alias       nifi-logs {tail -f /opt/nifi/2.11.0/logs/nifi-app.log}

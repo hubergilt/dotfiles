@@ -158,6 +158,5 @@ if ! pgrep -f "fswatch.*rotate_downloads" > /dev/null; then
 fi
 #rbenv
 eval "$(rbenv init - bash)"
-
 # kimi-code
 export PATH="/home/huber/.kimi-code/bin:$PATH"

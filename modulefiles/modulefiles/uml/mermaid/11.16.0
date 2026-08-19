@@ -1,0 +1,4 @@
+#%Module1.0
+module-whatis   {loads the Mermaid CLI v11.16.0 environment}
+setenv          MERMAID_HOME /opt/mermaid/11.16.0
+prepend-path    PATH /opt/mermaid/11.16.0/bin

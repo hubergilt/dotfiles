@@ -1,0 +1,11 @@
+#%Module
+module-whatis   {loads the Apache Kafka 4.3.1 environment}
+module          load java/25.0.1
+setenv          KAFKA_HOME /opt/kafka/4.3.1
+prepend-path    PATH /opt/kafka/4.3.1/bin
+set-alias       kafka-start {/opt/kafka/4.3.1/bin/kafka-server-start.sh -daemon /opt/kafka/4.3.1/config/server.properties}
+set-alias       kafka-stop {/opt/kafka/4.3.1/bin/kafka-server-stop.sh}
+set-alias       kafka-topics {/opt/kafka/4.3.1/bin/kafka-topics.sh}
+set-alias       kafka-console-producer {/opt/kafka/4.3.1/bin/kafka-console-producer.sh}
+set-alias       kafka-console-consumer {/opt/kafka/4.3.1/bin/kafka-console-consumer.sh}
+set-alias       kafka-logs {tail -f /opt/kafka/4.3.1/logs/server.log}
