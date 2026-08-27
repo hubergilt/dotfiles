@@ -1,0 +1,26 @@
+#%Module1.0#####################################################################
+##
+## sqlines modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+        puts stderr "\tsqlines - loads the SQLines SQL Converter environment"
+        puts stderr "\n\tThis sets up the environment to run sqlines (schema/DDL conversion)"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis   "loads the SQLines SQL Converter 3.3.307 environment"
+
+# for Tcl script use only
+set     version         3.3.307
+set     prefix          /opt/sqlines/$version
+
+# Set SQLines home
+setenv        SQLINES_HOME      $prefix
+prepend-path  PATH              $prefix
+
+# Create alias for easy launching
+set-alias     sqlines           "$prefix/sqlines"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/sqlines/$version}

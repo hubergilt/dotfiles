@@ -1,0 +1,31 @@
+#%Module1.0#####################################################################
+##
+## sqlinesdata modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+        puts stderr "\tsqlinesdata - loads the SQLines Data environment"
+        puts stderr "\n\tThis sets up the environment to run sqldata (high-speed data transfer)"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis   "loads the SQLines Data 3.7.33 environment"
+
+# for Tcl script use only
+set     version         3.7.33
+set     prefix          /opt/sqlinesdata/$version
+
+# SQLines Data requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+# Set SQLines Data home
+setenv        SQLINESDATA_HOME  $prefix
+prepend-path  PATH              $prefix
+
+# Create alias for easy launching (actual binary is named 'sqldata')
+set-alias     sqlinesdata       "$prefix/sqldata"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/sqlinesdata/$version}

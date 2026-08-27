@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## sqldeveloper modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+        puts stderr "\tsqldeveloper - loads the Oracle SQL Developer environment"
+        puts stderr "\n\tThis sets up the environment to run SQL Developer"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis   "loads the Oracle SQL Developer 26.2.0 environment (via Wine)"
+
+# for Tcl script use only
+set     version         26.2.0
+set     prefix          /opt/sqldeveloper/$version
+
+# Dedicated Wine prefix so this doesn't collide with any other
+# Wine-run app's config/registry
+setenv        WINEARCH          win64
+setenv        WINEPREFIX        $env(HOME)/.wine-sqldeveloper
+
+# Set SQL Developer home
+setenv        SQLDEVELOPER_HOME $prefix
+prepend-path  PATH              $prefix
+
+# Launch via Wine, using the bundled Windows JRE inside the package
+# (jdk/jre/bin/java.exe) rather than any Linux java module
+set-alias     sqldeveloper      "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 wine $prefix/sqldeveloper.exe"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/sqldeveloper/$version}
