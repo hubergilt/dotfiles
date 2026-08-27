@@ -25,8 +25,12 @@ set-function _ora_exec_sql {
     local CDBCONN="$1"
     local SQLTEXT="$2"
     local TMPFILE
-    TMPFILE="$(mktemp /tmp/orasqlXXXXXX)" || return 1
-    printf '%s\n' "$SQLTEXT" > "$TMPFILE"
+    TMPFILE="$(mktemp --suffix=.sql /tmp/orasqlXXXXXX)" || return 1
+    {
+        printf 'WHENEVER SQLERROR EXIT FAILURE\n'
+        printf '%s\n' "$SQLTEXT"
+        printf 'EXIT SUCCESS\n'
+    } > "$TMPFILE"
     sql -S -name "$CDBCONN" @"$TMPFILE"
     local RC=$?
     rm -f "$TMPFILE"
