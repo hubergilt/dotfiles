@@ -4,3 +4,232 @@ module-whatis   {loads the Oracle SQLcl 26.2.1 environment}
 module          load java/17.0.17
 setenv          SQLCL_HOME /opt/sqlcl/26.2.1
 prepend-path    PATH /opt/sqlcl/26.2.1/bin
+
+# Default connmgr entry used for CDB/sysdba operations (PDB create/drop, user
+# create/drop, open/close). Override per-call with the trailing argument on
+# any function below, or change this default to match your environment.
+setenv ORACLE_CDB_CONN ora01
+
+# Oracle convenience functions (mirrors the PostgreSQL module's pg* functions)
+# All functions rely on SQLcl's connection manager (`connmgr`), so no
+# passwords are stored in this file or typed on the command line for the
+# CDB connection - `sql -name <entry>` resolves credentials the same way
+# your existing `sql -name ora01` / `sql -name rentaldb-app` workflow does.
+#
+# SQL is written to a temp file and run with `sql ... @file` rather than
+# piped in via heredoc, since heredocs don't survive being embedded in a
+# set-function block on every module system.
+
+# Internal helper: run multi-line SQL text against a connmgr entry
+set-function _ora_exec_sql {
+    local CDBCONN="$1"
+    local SQLTEXT="$2"
+    local TMPFILE
+    TMPFILE="$(mktemp /tmp/orasqlXXXXXX)" || return 1
+    printf '%s\n' "$SQLTEXT" > "$TMPFILE"
+    sql -S -name "$CDBCONN" @"$TMPFILE"
+    local RC=$?
+    rm -f "$TMPFILE"
+    return $RC
+}
+
+# Connect using a saved connmgr entry
+set-function ora-connect {
+    local CONNNAME="${1:-$ORACLE_CDB_CONN}"
+    sql -name "$CONNNAME"
+}
+
+# Create a pluggable database
+set-function ora-createdb {
+    local PDB="$1"
+    local ADMINPASS="$2"
+    local ADMINUSER="${3:-pdbadmin}"
+    local CDBCONN="${4:-$ORACLE_CDB_CONN}"
+    if [ -z "$PDB" ] || [ -z "$ADMINPASS" ]; then
+        echo "Usage: ora-createdb <pdbname> <adminpass> [adminuser] [cdb_connmgr_name]"
+        return 1
+    fi
+    local PDBLOWER
+    PDBLOWER="$(echo "$PDB" | tr '[:upper:]' '[:lower:]')"
+    local SQLTEXT="CREATE PLUGGABLE DATABASE $PDB ADMIN USER $ADMINUSER IDENTIFIED BY $ADMINPASS ROLES=(DBA) FILE_NAME_CONVERT=('pdbseed','$PDBLOWER');
+ALTER PLUGGABLE DATABASE $PDB OPEN;
+ALTER PLUGGABLE DATABASE $PDB SAVE STATE;"
+    if _ora_exec_sql "$CDBCONN" "$SQLTEXT"; then
+        echo "PDB '$PDB' created and opened successfully (admin user: $ADMINUSER)."
+    else
+        echo "Failed to create PDB '$PDB'."
+        return 1
+    fi
+}
+
+# Drop a pluggable database
+set-function ora-dropdb {
+    local PDB="$1"
+    local CDBCONN="${2:-$ORACLE_CDB_CONN}"
+    if [ -z "$PDB" ]; then
+        echo "Usage: ora-dropdb <pdbname> [cdb_connmgr_name]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop PDB '$PDB' INCLUDING DATAFILES? This cannot be undone. [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        local SQLTEXT="ALTER PLUGGABLE DATABASE $PDB CLOSE IMMEDIATE;
+DROP PLUGGABLE DATABASE $PDB INCLUDING DATAFILES;"
+        if _ora_exec_sql "$CDBCONN" "$SQLTEXT"; then
+            echo "PDB '$PDB' dropped successfully."
+        else
+            echo "Failed to drop PDB '$PDB'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
+# Create an application user in a PDB; auto-creates the tablespace if missing
+set-function ora-createuser {
+    local NEWUSER="$1"
+    local NEWPASS="$2"
+    local PDB="$3"
+    local TABLESPACE="${4:-USERS}"
+    local CDBCONN="${5:-$ORACLE_CDB_CONN}"
+    if [ -z "$NEWUSER" ] || [ -z "$NEWPASS" ] || [ -z "$PDB" ]; then
+        echo "Usage: ora-createuser <newuser> <newpass> <pdbname> [tablespace] [cdb_connmgr_name]"
+        return 1
+    fi
+    # A freshly seeded PDB only has SYSTEM/SYSAUX/UNDO/TEMP, so USERS has to
+    # be created explicitly - this reuses the directory of the PDB's other
+    # datafiles rather than requiring db_create_file_dest to be set.
+    local SQLTEXT="ALTER SESSION SET CONTAINER = $PDB;
+DECLARE
+  v_count NUMBER;
+  v_dir   VARCHAR2(400);
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM dba_tablespaces WHERE tablespace_name = UPPER('$TABLESPACE');
+  IF v_count = 0 THEN
+    SELECT SUBSTR(name, 1, INSTR(name, '/', -1)) INTO v_dir FROM v\$datafile WHERE ROWNUM = 1;
+    EXECUTE IMMEDIATE 'CREATE TABLESPACE ' || '$TABLESPACE' ||
+      ' DATAFILE ''' || v_dir || LOWER('$TABLESPACE') || '01.dbf'' SIZE 500M AUTOEXTEND ON NEXT 100M MAXSIZE UNLIMITED';
+  END IF;
+END;
+/
+CREATE USER $NEWUSER IDENTIFIED BY $NEWPASS DEFAULT TABLESPACE $TABLESPACE QUOTA UNLIMITED ON $TABLESPACE;
+GRANT CONNECT, RESOURCE, CREATE VIEW TO $NEWUSER;"
+    if _ora_exec_sql "$CDBCONN" "$SQLTEXT"; then
+        echo "User '$NEWUSER' created successfully in PDB '$PDB'."
+        echo "Tip: register it with connmgr for easy reconnects:"
+        echo "  connmgr save -name ${PDB,,}-app -host <host> -port <port> -service $PDB -user $NEWUSER"
+    else
+        echo "Failed to create user '$NEWUSER' in PDB '$PDB'."
+        return 1
+    fi
+}
+
+# Drop a user (with CASCADE)
+set-function ora-dropuser {
+    local TARGETUSER="$1"
+    local PDB="$2"
+    local CDBCONN="${3:-$ORACLE_CDB_CONN}"
+    if [ -z "$TARGETUSER" ] || [ -z "$PDB" ]; then
+        echo "Usage: ora-dropuser <user> <pdbname> [cdb_connmgr_name]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop user '$TARGETUSER' in PDB '$PDB'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        local SQLTEXT="ALTER SESSION SET CONTAINER = $PDB;
+DROP USER $TARGETUSER CASCADE;"
+        if _ora_exec_sql "$CDBCONN" "$SQLTEXT"; then
+            echo "User '$TARGETUSER' dropped successfully."
+        else
+            echo "Failed to drop user '$TARGETUSER'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
+# PDB service management (open/close/status stand in for start/stop/status,
+# since the CDB instance itself is normally managed by OS/systemd, not by
+# an individual developer's session)
+set-function ora-start {
+    local PDB="$1"
+    local CDBCONN="${2:-$ORACLE_CDB_CONN}"
+    if [ -z "$PDB" ]; then
+        echo "Usage: ora-start <pdbname> [cdb_connmgr_name]"
+        return 1
+    fi
+    local SQLTEXT="ALTER PLUGGABLE DATABASE $PDB OPEN;
+ALTER PLUGGABLE DATABASE $PDB SAVE STATE;"
+    _ora_exec_sql "$CDBCONN" "$SQLTEXT"
+}
+
+set-function ora-stop {
+    local PDB="$1"
+    local CDBCONN="${2:-$ORACLE_CDB_CONN}"
+    if [ -z "$PDB" ]; then
+        echo "Usage: ora-stop <pdbname> [cdb_connmgr_name]"
+        return 1
+    fi
+    local SQLTEXT="ALTER PLUGGABLE DATABASE $PDB CLOSE IMMEDIATE;"
+    _ora_exec_sql "$CDBCONN" "$SQLTEXT"
+}
+
+set-function ora-restart {
+    local PDB="$1"
+    local CDBCONN="${2:-$ORACLE_CDB_CONN}"
+    if [ -z "$PDB" ]; then
+        echo "Usage: ora-restart <pdbname> [cdb_connmgr_name]"
+        return 1
+    fi
+    local SQLTEXT="ALTER PLUGGABLE DATABASE $PDB CLOSE IMMEDIATE;
+ALTER PLUGGABLE DATABASE $PDB OPEN;
+ALTER PLUGGABLE DATABASE $PDB SAVE STATE;"
+    _ora_exec_sql "$CDBCONN" "$SQLTEXT"
+}
+
+set-function ora-status {
+    local PDB="$1"
+    local CDBCONN="${2:-$ORACLE_CDB_CONN}"
+    if [ -z "$PDB" ]; then
+        echo "Usage: ora-status <pdbname> [cdb_connmgr_name]"
+        return 1
+    fi
+    local SQLTEXT="SET PAGESIZE 100
+SELECT name, open_mode FROM v\$pdbs WHERE name = UPPER('$PDB');"
+    _ora_exec_sql "$CDBCONN" "$SQLTEXT"
+}
+
+# Help command listing all available custom functions
+set-function ora-help {
+    echo "Oracle SQLcl module - available commands:"
+    echo ""
+    echo "  Connection:"
+    echo "    ora-connect [connmgr_name]                                 Connect using a saved connmgr entry"
+    echo "                                                               (default: \$ORACLE_CDB_CONN)"
+    echo ""
+    echo "  PDB management:"
+    echo "    ora-createdb <pdbname> <adminpass> [adminuser] [cdbconn]   Create a pluggable database from the seed"
+    echo "                                                               (default adminuser: pdbadmin)"
+    echo "    ora-dropdb <pdbname> [cdbconn]                             Drop a PDB including datafiles (asks for confirmation)"
+    echo ""
+    echo "  User management:"
+    echo "    ora-createuser <user> <pass> <pdbname> [tbs] [cdbconn]     Create a user in a PDB; auto-creates the"
+    echo "                                                               tablespace (default: USERS) if missing"
+    echo "    ora-dropuser <user> <pdbname> [cdbconn]                    Drop a user with CASCADE (asks for confirmation)"
+    echo ""
+    echo "  PDB service management:"
+    echo "    ora-start <pdbname> [cdbconn]                              Open a PDB and save its state"
+    echo "    ora-stop <pdbname> [cdbconn]                               Close a PDB"
+    echo "    ora-restart <pdbname> [cdbconn]                            Close and reopen a PDB"
+    echo "    ora-status <pdbname> [cdbconn]                             Show a PDB's open_mode"
+    echo ""
+    echo "  Help:"
+    echo "    ora-help                                                   Show this help message"
+    echo "    ora-h                                                      Alias for ora-help"
+    echo ""
+    echo "  [cdbconn] defaults to \$ORACLE_CDB_CONN (currently: $ORACLE_CDB_CONN) - the connmgr"
+    echo "  entry used for sysdba access to the CDB, e.g. the 'ora01' entry."
+}
+
+# Short alias for the help function above
+set-alias ora-h "ora-help"
