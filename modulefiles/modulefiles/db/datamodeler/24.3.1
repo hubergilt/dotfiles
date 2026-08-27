@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## datamodeler modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tdatamodeler - loads the Oracle SQL Developer Data Modeler environment"
+        puts stderr "\n\tThis sets up the environment to run Data Modeler"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Oracle SQL Developer Data Modeler 24.3.1 environment"
+
+# for Tcl script use only
+set	version		24.3.1
+set	prefix		/opt/datamodeler/$version
+
+# Data Modeler requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+# Set Data Modeler home
+setenv        DATAMODELER_HOME $prefix
+prepend-path  PATH             $prefix
+
+# Create alias for easy launching
+set-alias     datamodeler      "$prefix/datamodeler.sh"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/datamodeler/$version}
