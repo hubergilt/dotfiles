@@ -158,5 +158,7 @@ if ! pgrep -f "fswatch.*rotate_downloads" > /dev/null; then
 fi
 #rbenv
 eval "$(rbenv init - bash)"
-# kimi-code
+#kimi-code
 export PATH="/home/huber/.kimi-code/bin:$PATH"
+#sqlcmd
+export PATH="$PATH:/opt/mssql-tools18/bin"

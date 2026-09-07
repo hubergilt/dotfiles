@@ -1,0 +1,175 @@
+#%Module1.0
+##
+## db/sqlcmd/1.10.0 modulefile
+## Fixed: functions now default to sqlcmd's *current* context instead of a
+## hardcoded MSSQL_DEFAULT_CONTEXT env var, so a context-name mismatch (e.g.
+## naming your context "msql25" instead of "mssql") no longer breaks them.
+##
+## Fixed: _mssql_exec_sql now calls `sqlcmd -b` (abort batch on error) so a
+## failed statement inside a multi-GO script actually returns non-zero,
+## instead of the wrapper printing a false "success" message.
+##
+## DEV-ONLY CHANGE: mssql-createuser's CREATE LOGIN now sets
+## CHECK_POLICY = OFF and CHECK_EXPIRATION = OFF, bypassing Windows password
+## complexity/expiration rules. This lets you use simple throwaway dev
+## passwords, but it also means SQL Server will accept weak/blank-ish
+## passwords with no expiry. Do NOT use this module on anything but a local
+## dev/lab instance.
+##
+
+module-whatis   {loads the Microsoft sqlcmd (Go) 1.10.0 environment}
+setenv          SQLCMD_HOME /opt/sqlcmd/1.10.0
+prepend-path    PATH /opt/sqlcmd/1.10.0
+
+# NOTE: MSSQL_DEFAULT_CONTEXT is kept only as a last-resort override.
+# In normal use you don't need to set it - functions fall back to
+# `sqlcmd config current-context` automatically.
+setenv          MSSQL_DEFAULT_CONTEXT ""
+
+set-function    _mssql_default_context {
+    local CTX
+    CTX="$(sqlcmd config current-context 2>/dev/null)"
+    if [ -z "$CTX" ]; then
+        CTX="$MSSQL_DEFAULT_CONTEXT"
+    fi
+    printf '%s' "$CTX"
+}
+
+set-function    _mssql_exec_sql {
+    local CTXNAME="$1"
+    local SQLTEXT="$2"
+    local TMPFILE
+    TMPFILE="$(mktemp --suffix=.sql /tmp/mssqlsqlXXXXXX)" || return 1
+    printf '%s\n' "$SQLTEXT" > "$TMPFILE"
+    local PREVCTX
+    PREVCTX="$(sqlcmd config current-context 2>/dev/null)"
+    if [ -z "$CTXNAME" ]; then
+        CTXNAME="$PREVCTX"
+    fi
+    if [ -z "$CTXNAME" ]; then
+        echo "No context specified and no current context set."
+        echo "Run: sqlcmd config use-context <name>   or pass a context explicitly."
+        rm -f "$TMPFILE"
+        return 1
+    fi
+    if [ "$CTXNAME" != "$PREVCTX" ]; then
+        if ! sqlcmd config use-context "$CTXNAME" >/dev/null 2>&1; then
+            echo "Could not switch to context '$CTXNAME'."
+            rm -f "$TMPFILE"
+            return 1
+        fi
+    fi
+    sqlcmd -b -i "$TMPFILE"
+    local RC=$?
+    if [ -n "$PREVCTX" ] && [ "$CTXNAME" != "$PREVCTX" ]; then
+        sqlcmd config use-context "$PREVCTX" >/dev/null 2>&1
+    fi
+    rm -f "$TMPFILE"
+    return $RC
+}
+
+set-function    mssql-connect {
+    local CTXNAME="${1:-$(_mssql_default_context)}"
+    if [ -z "$CTXNAME" ]; then
+        echo "Usage: mssql-connect [context]   (no current context set)"
+        return 1
+    fi
+    sqlcmd config use-context "$CTXNAME" && sqlcmd
+}
+
+set-function    mssql-createdb {
+    local DBNAME="$1"
+    local CTXNAME="${2:-$(_mssql_default_context)}"
+    if [ -z "$DBNAME" ]; then
+        echo "Usage: mssql-createdb <dbname> [context]"
+        return 1
+    fi
+    local SQLTEXT="CREATE DATABASE [$DBNAME];"
+    if _mssql_exec_sql "$CTXNAME" "$SQLTEXT"; then
+        echo "Database '$DBNAME' created successfully."
+    else
+        echo "Failed to create database '$DBNAME'."
+        return 1
+    fi
+}
+
+set-function    mssql-dropdb {
+    local DBNAME="$1"
+    local CTXNAME="${2:-$(_mssql_default_context)}"
+    if [ -z "$DBNAME" ]; then
+        echo "Usage: mssql-dropdb <dbname> [context]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop database '$DBNAME'? This cannot be undone. [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        local SQLTEXT="ALTER DATABASE [$DBNAME] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+DROP DATABASE [$DBNAME];"
+        if _mssql_exec_sql "$CTXNAME" "$SQLTEXT"; then
+            echo "Database '$DBNAME' dropped successfully."
+        else
+            echo "Failed to drop database '$DBNAME'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
+set-function    mssql-createuser {
+    local NEWUSER="$1"
+    local NEWPASS="$2"
+    local DBNAME="$3"
+    local DBROLE="${4:-db_owner}"
+    local DEFSCHEMA="${5:-dbo}"
+    local CTXNAME="${6:-$(_mssql_default_context)}"
+    if [ -z "$NEWUSER" ] || [ -z "$NEWPASS" ] || [ -z "$DBNAME" ]; then
+        echo "Usage: mssql-createuser <newuser> <newpass> <dbname> [dbrole] [defaultschema] [context]"
+        echo "(DEV ONLY: login is created with CHECK_POLICY/CHECK_EXPIRATION = OFF)"
+        return 1
+    fi
+    local SQLTEXT="CREATE LOGIN [$NEWUSER] WITH PASSWORD = '$NEWPASS',
+    CHECK_POLICY = OFF,      -- bypasses complexity requirements (DEV ONLY!)
+    CHECK_EXPIRATION = OFF;  -- disables password expiration (DEV ONLY!)
+GO
+USE [$DBNAME];
+GO
+CREATE USER [$NEWUSER] FOR LOGIN [$NEWUSER] WITH DEFAULT_SCHEMA=[$DEFSCHEMA];
+ALTER ROLE $DBROLE ADD MEMBER [$NEWUSER];"
+    if _mssql_exec_sql "$CTXNAME" "$SQLTEXT"; then
+        echo "User '$NEWUSER' created successfully in database '$DBNAME' (role: $DBROLE, default schema: $DEFSCHEMA)."
+    else
+        echo "Failed to create user '$NEWUSER' in database '$DBNAME'."
+        return 1
+    fi
+}
+
+set-function    mssql-dropuser {
+    local TARGETUSER="$1"
+    local DBNAME="$2"
+    local CTXNAME="${3:-$(_mssql_default_context)}"
+    if [ -z "$TARGETUSER" ] || [ -z "$DBNAME" ]; then
+        echo "Usage: mssql-dropuser <user> <dbname> [context]"
+        return 1
+    fi
+    read -p "Are you sure you want to drop user '$TARGETUSER' (and its login) from '$DBNAME'? [y/N] " CONFIRM
+    if [[ "$CONFIRM" == "y" || "$CONFIRM" == "Y" ]]; then
+        local SQLTEXT="USE [$DBNAME];
+GO
+DROP USER IF EXISTS [$TARGETUSER];
+GO
+DROP LOGIN [$TARGETUSER];"
+        if _mssql_exec_sql "$CTXNAME" "$SQLTEXT"; then
+            echo "User '$TARGETUSER' dropped successfully."
+        else
+            echo "Failed to drop user '$TARGETUSER'."
+            return 1
+        fi
+    else
+        echo "Aborted."
+    fi
+}
+
+# NOTE: the original modulefile you pasted was truncated after mssql-dropuser
+# in the terminal output, so if you have additional functions beyond this
+# point (e.g. a list/show helper), apply the same pattern to them:
+# replace `"${N:-$MSSQL_DEFAULT_CONTEXT}"` with `"${N:-$(_mssql_default_context)}"`.
