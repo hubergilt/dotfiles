@@ -27,11 +27,14 @@ setenv        WILDFLY_HOME $prefix
 prepend-path  PATH         $prefix/bin
 
 # Create aliases for easy management
-set-alias     wildfly-start      "$prefix/bin/standalone.sh"
-set-alias     wildfly-start-bg   "$prefix/bin/standalone.sh > /dev/null 2>&1 &"
-set-alias     wildfly-stop       "$prefix/bin/jboss-cli.sh --connect command=:shutdown"
-set-alias     wildfly-domain     "$prefix/bin/domain.sh"
-set-alias     wildfly-cli        "$prefix/bin/jboss-cli.sh"
+# Run as the dedicated `wildfly` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     wildfly-start      "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,WILDFLY_HOME,PATH -u wildfly $prefix/bin/standalone.sh)"
+set-alias     wildfly-start-bg   "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,WILDFLY_HOME,PATH -u wildfly $prefix/bin/standalone.sh > /dev/null 2>&1 &)"
+set-alias     wildfly-stop       "sudo --preserve-env=JAVA_HOME,JBOSS_HOME,WILDFLY_HOME,PATH -u wildfly $prefix/bin/jboss-cli.sh --connect command=:shutdown"
+set-alias     wildfly-domain     "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,WILDFLY_HOME,PATH -u wildfly $prefix/bin/domain.sh)"
+set-alias     wildfly-cli        "sudo --preserve-env=JAVA_HOME,JBOSS_HOME,WILDFLY_HOME,PATH -u wildfly $prefix/bin/jboss-cli.sh"
 set-alias     wildfly-logs       "tail -f $prefix/standalone/log/server.log"
 
 # enable module versioning modulepath

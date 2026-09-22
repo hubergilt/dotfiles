@@ -26,11 +26,14 @@ setenv        JBOSS_HOME $prefix
 prepend-path  PATH       $prefix/bin
 
 # Create aliases for easy management
-set-alias     jboss-start      "$prefix/bin/standalone.sh"
-set-alias     jboss-start-bg   "$prefix/bin/standalone.sh > /dev/null 2>&1 &"
-set-alias     jboss-stop       "$prefix/bin/jboss-cli.sh --connect command=:shutdown"
-set-alias     jboss-domain     "$prefix/bin/domain.sh"
-set-alias     jboss-cli        "$prefix/bin/jboss-cli.sh"
+# Run as the dedicated `jboss` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     jboss-start      "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/standalone.sh)"
+set-alias     jboss-start-bg   "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/standalone.sh > /dev/null 2>&1 &)"
+set-alias     jboss-stop       "sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/jboss-cli.sh --connect command=:shutdown"
+set-alias     jboss-domain     "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/domain.sh)"
+set-alias     jboss-cli        "sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/jboss-cli.sh"
 set-alias     jboss-logs       "tail -f $prefix/standalone/log/server.log"
 
 # enable module versioning modulepath

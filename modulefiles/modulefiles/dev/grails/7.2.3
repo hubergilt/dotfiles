@@ -1,0 +1,30 @@
+#%Module1.0#####################################################################
+##
+## Grails 7.2.3 modulefile
+##
+proc ModulesHelp { } {
+	global version prefix
+
+	puts stderr "\tgrails - loads the Grails web framework environment"
+	puts stderr "\n\tThis adds $prefix/bin to your PATH"
+	puts stderr "\tenvironment variables."
+	puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Apache Grails 7.2.3 build environment"
+
+# for Tcl script use only
+set	version     7.2.3
+set	prefix      /opt/grails/$version
+
+conflict dev/grails
+
+# Grails 7 requires JDK 17 minimum (tested through JDK 21)
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+setenv          GRAILS_HOME $prefix
+prepend-path    PATH        $prefix/bin
+
+# Documentation/Reference: https://grails.apache.org/documentation.html

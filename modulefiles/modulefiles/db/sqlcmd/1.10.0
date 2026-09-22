@@ -169,7 +169,38 @@ DROP LOGIN [$TARGETUSER];"
     fi
 }
 
-# NOTE: the original modulefile you pasted was truncated after mssql-dropuser
-# in the terminal output, so if you have additional functions beyond this
-# point (e.g. a list/show helper), apply the same pattern to them:
-# replace `"${N:-$MSSQL_DEFAULT_CONTEXT}"` with `"${N:-$(_mssql_default_context)}"`.
+set-function    mssql-help {
+    local CTX
+    CTX="$(_mssql_default_context)"
+    echo "sqlcmd (Go) module - available commands:"
+    echo ""
+    echo "  Connection:"
+    echo "    mssql-connect [context]                                           Connect interactively, switching to the given context"
+    echo "                                                                      (default: current context, or \$MSSQL_DEFAULT_CONTEXT if none is set)"
+    echo ""
+    echo "  Database management:"
+    echo "    mssql-createdb <dbname> [context]                                 Create a database"
+    echo "    mssql-dropdb <dbname> [context]                                   Drop a database (asks for confirmation)"
+    echo ""
+    echo "  User management:"
+    echo "    mssql-createuser <user> <pass> <dbname> [role] [schema] [context] Create a login + database user"
+    echo "                                                                      (default role: db_owner, default schema: dbo)"
+    echo "                                                                      DEV ONLY: login is created with CHECK_POLICY/CHECK_EXPIRATION = OFF"
+    echo "    mssql-dropuser <user> <dbname> [context]                          Drop a user and its login (asks for confirmation)"
+    echo ""
+    echo "  Help:"
+    echo "    mssql-help                                                        Show this help message"
+    echo "    mssql-h                                                           Alias for mssql-help"
+    echo ""
+    if [ -n "$CTX" ]; then
+        echo "  [context] defaults to the current sqlcmd context (currently: $CTX) when omitted."
+    else
+        echo "  [context] defaults to the current sqlcmd context when omitted - none is set right now,"
+        echo "  so pass one explicitly or run 'sqlcmd config use-context <name>' first."
+    fi
+    echo "  \$MSSQL_DEFAULT_CONTEXT (currently: \"$MSSQL_DEFAULT_CONTEXT\") is used only as a last-resort"
+    echo "  fallback if no current context is set."
+}
+
+# Short alias for the help function above
+set-alias      mssql-h "mssql-help"
