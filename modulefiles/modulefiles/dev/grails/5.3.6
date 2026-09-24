@@ -1,0 +1,28 @@
+#%Module1.0#####################################################################
+##
+## Grails 5.3.6 modulefile
+##
+proc ModulesHelp { } {
+	global version prefix
+
+	puts stderr "\tgrails - loads the Grails web framework environment"
+	puts stderr "\n\tThis adds $prefix/bin to your PATH"
+	puts stderr "\tenvironment variables."
+	puts stderr "\n\tVersion $version\n"
+}
+
+# Updated description string
+module-whatis	"loads the Grails 6.3.6 build environment"
+
+# Version configuration
+set	version     5.3.6
+set	prefix      /opt/grails/$version
+
+# Conflict with other Grails versions
+conflict dev/grails
+
+# Environment setup
+setenv          GRAILS_HOME $prefix
+prepend-path    PATH        $prefix/bin
+
+# Documentation/Reference: https://docs.grails.org/5.3.6/guide/index.html

@@ -1,0 +1,38 @@
+#%Module1.0#####################################################################
+##
+## tomcat modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\ttomcat - loads the Apache Tomcat environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Apache Tomcat 9.0.122 environment"
+
+# for Tcl script use only
+set	version		9.0.122
+set	prefix		/opt/tomcat/$version
+
+# Tomcat requires Java
+if { ![is-loaded java] } {
+    module load java/17.0.17
+}
+
+setenv        CATALINA_HOME $prefix
+setenv        TOMCAT_HOME   $prefix
+prepend-path  PATH          $prefix/bin
+
+# Create aliases for easy management
+# Run as the dedicated `tomcat` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     tomcat-start  "(cd $prefix && sudo --preserve-env=JAVA_HOME,CATALINA_HOME,CATALINA_BASE,PATH -u tomcat $prefix/bin/startup.sh)"
+set-alias     tomcat-stop   "(cd $prefix && sudo --preserve-env=JAVA_HOME,CATALINA_HOME,CATALINA_BASE,PATH -u tomcat $prefix/bin/shutdown.sh)"
+set-alias     tomcat-logs   "tail -f $prefix/logs/catalina.out"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/tomcat/$version}
