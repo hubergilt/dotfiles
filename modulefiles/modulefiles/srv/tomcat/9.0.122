@@ -33,6 +33,8 @@ prepend-path  PATH          $prefix/bin
 set-alias     tomcat-start  "(cd $prefix && sudo --preserve-env=JAVA_HOME,CATALINA_HOME,CATALINA_BASE,PATH -u tomcat $prefix/bin/startup.sh)"
 set-alias     tomcat-stop   "(cd $prefix && sudo --preserve-env=JAVA_HOME,CATALINA_HOME,CATALINA_BASE,PATH -u tomcat $prefix/bin/shutdown.sh)"
 set-alias     tomcat-logs   "tail -f $prefix/logs/catalina.out"
+set-alias     tomcat-status "if pgrep -f \"catalina.home=$prefix\" > /dev/null; then echo \"Tomcat is running (PID: \$(pgrep -f 'catalina.home=$prefix'))\"; else echo \"Tomcat is not running\"; fi"
+set-alias     tomcat-clean-log "sudo -u tomcat truncate -s 0 $prefix/logs/catalina.out"
 
 # enable module versioning modulepath
 #module use {~/modulefiles/tomcat/$version}
