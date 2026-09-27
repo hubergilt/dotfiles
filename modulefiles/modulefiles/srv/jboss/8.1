@@ -35,6 +35,8 @@ set-alias     jboss-stop       "sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u
 set-alias     jboss-domain     "(cd $prefix && sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/domain.sh)"
 set-alias     jboss-cli        "sudo --preserve-env=JAVA_HOME,JBOSS_HOME,PATH -u jboss $prefix/bin/jboss-cli.sh"
 set-alias     jboss-logs       "tail -f $prefix/standalone/log/server.log"
+set-alias     jboss-status     "if pgrep -f \"jboss.home.dir=$prefix\" > /dev/null; then echo \"JBoss is running (PID: \$(pgrep -f 'jboss.home.dir=$prefix'))\"; else echo \"JBoss is not running\"; fi"
+set-alias     jboss-clean-log  "sudo -u jboss truncate -s 0 $prefix/standalone/log/server.log"
 
 # enable module versioning modulepath
 #module use {~/modulefiles/jboss/$version}
