@@ -1,0 +1,44 @@
+#%Module1.0#####################################################################
+##
+## payara modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tpayara - loads the Payara Server environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Payara Server 7.2026.9 environment"
+
+# for Tcl script use only
+set	version		7.2026.9
+set	prefix		/opt/payara/$version
+
+# Payara 7 and GlassFish share default ports (4848/8080/8181) and both put
+# an `asadmin` on PATH, so don't allow loading them together.
+conflict      srv/payara
+conflict      srv/glassfish
+
+# Payara 7 requires JDK 21+
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv        PAYARA_HOME    $prefix
+prepend-path  PATH           $prefix/bin
+
+# Create aliases for easy management
+# Run as the dedicated `payara` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     payara-start        "sudo --preserve-env=JAVA_HOME,PAYARA_HOME,PATH -u payara $prefix/bin/asadmin start-domain domain1"
+set-alias     payara-start-fg     "sudo --preserve-env=JAVA_HOME,PAYARA_HOME,PATH -u payara $prefix/bin/asadmin start-domain --verbose domain1"
+set-alias     payara-stop         "sudo --preserve-env=JAVA_HOME,PAYARA_HOME,PATH -u payara $prefix/bin/asadmin stop-domain domain1"
+set-alias     payara-restart      "sudo --preserve-env=JAVA_HOME,PAYARA_HOME,PATH -u payara $prefix/bin/asadmin restart-domain domain1"
+set-alias     payara-cli          "sudo --preserve-env=JAVA_HOME,PAYARA_HOME,PATH -u payara $prefix/bin/asadmin"
+set-alias     payara-logs         "tail -f $prefix/glassfish/domains/domain1/logs/server.log"
+set-alias     payara-status       "sudo --preserve-env=JAVA_HOME,PAYARA_HOME,PATH -u payara $prefix/bin/asadmin list-domains"
+set-alias     payara-clean-log    "sudo -u payara truncate -s 0 $prefix/glassfish/domains/domain1/logs/server.log"

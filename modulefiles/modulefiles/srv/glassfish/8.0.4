@@ -1,0 +1,42 @@
+#%Module1.0#####################################################################
+##
+## glassfish modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tglassfish - loads the GlassFish environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the GlassFish 8.0.4 environment"
+
+# for Tcl script use only
+set	version		8.0.4
+set	prefix		/opt/glassfish/$version
+
+# GlassFish 8.x requires JDK 21+ (certified against JDK 25)
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv        GLASSFISH_HOME $prefix/glassfish
+prepend-path  PATH           $prefix/bin
+
+# Create aliases for easy management
+# Run as the dedicated `glassfish` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     glassfish-start        "sudo --preserve-env=JAVA_HOME,GLASSFISH_HOME,PATH -u glassfish $prefix/bin/asadmin start-domain domain1"
+set-alias     glassfish-start-fg     "sudo --preserve-env=JAVA_HOME,GLASSFISH_HOME,PATH -u glassfish $prefix/bin/asadmin start-domain --verbose domain1"
+set-alias     glassfish-stop         "sudo --preserve-env=JAVA_HOME,GLASSFISH_HOME,PATH -u glassfish $prefix/bin/asadmin stop-domain domain1"
+set-alias     glassfish-restart      "sudo --preserve-env=JAVA_HOME,GLASSFISH_HOME,PATH -u glassfish $prefix/bin/asadmin restart-domain domain1"
+set-alias     glassfish-cli          "sudo --preserve-env=JAVA_HOME,GLASSFISH_HOME,PATH -u glassfish $prefix/bin/asadmin"
+set-alias     glassfish-logs         "tail -f $prefix/glassfish/domains/domain1/logs/server.log"
+set-alias     glassfish-status       "sudo --preserve-env=JAVA_HOME,GLASSFISH_HOME,PATH -u glassfish $prefix/bin/asadmin list-domains"
+set-alias     glassfish-clean-log    "sudo -u glassfish truncate -s 0 $prefix/glassfish/domains/domain1/logs/server.log"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/glassfish/$version}
