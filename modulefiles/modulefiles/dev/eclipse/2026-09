@@ -11,10 +11,10 @@ proc ModulesHelp { } {
         puts stderr "\n\tVersion $version\n"
 }
 
-module-whatis	"loads the Eclipse IDE for Java EE Developers 2025-12 environment"
+module-whatis	"loads the Eclipse IDE for Enterprise Java and Web Developers 2026-09 environment"
 
 # for Tcl script use only
-set	version		2025-12
+set	version		2026-09
 set	prefix		/opt/eclipse/$version
 
 # Eclipse requires Java

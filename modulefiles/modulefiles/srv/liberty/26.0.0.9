@@ -1,0 +1,52 @@
+#%Module1.0#####################################################################
+##
+## liberty modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tliberty - loads the WebSphere Liberty (Jakarta EE 11) environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the WebSphere Liberty Jakarta EE 11 26.0.0.9 environment"
+
+# for Tcl script use only
+set	version		26.0.0.9
+set	prefix		/opt/liberty/$version
+# Liberty manages one or more named "server" instances under wlp/usr/servers/
+# — unlike JBoss/Tomcat's single standalone instance. defaultServer is
+# Liberty's own convention (what `bin/server create` names it if you don't
+# pass a name), used consistently below so these aliases don't need a
+# server name typed in every time.
+set	serverName	defaultServer
+
+# Liberty (Jakarta EE 11) requires Java 17+; matches the same version
+# already used for jboss/8.1 in this environment.
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv        WLP_HOME  $prefix
+prepend-path  PATH      $prefix/bin
+
+# Create aliases for easy management
+# Run as the dedicated `liberty` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+# Unlike JBoss's standalone.sh, Liberty's own `server start` subcommand
+# already daemonizes/backgrounds itself and returns control to the shell —
+# no manual `&`/`> /dev/null` redirection needed for the backgrounded form.
+set-alias     liberty-create    "sudo --preserve-env=JAVA_HOME,WLP_HOME,PATH -u liberty $prefix/bin/server create $serverName"
+set-alias     liberty-start     "(cd $prefix && sudo --preserve-env=JAVA_HOME,WLP_HOME,PATH -u liberty $prefix/bin/server run $serverName)"
+set-alias     liberty-start-bg  "sudo --preserve-env=JAVA_HOME,WLP_HOME,PATH -u liberty $prefix/bin/server start $serverName"
+set-alias     liberty-stop      "sudo --preserve-env=JAVA_HOME,WLP_HOME,PATH -u liberty $prefix/bin/server stop $serverName"
+set-alias     liberty-status    "sudo --preserve-env=JAVA_HOME,WLP_HOME,PATH -u liberty $prefix/bin/server status $serverName"
+set-alias     liberty-logs      "tail -f $prefix/usr/servers/$serverName/logs/console.log"
+set-alias     liberty-messages  "tail -f $prefix/usr/servers/$serverName/logs/messages.log"
+set-alias     liberty-clean-log "sudo -u liberty truncate -s 0 $prefix/usr/servers/$serverName/logs/console.log $prefix/usr/servers/$serverName/logs/messages.log"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/liberty/$version}
