@@ -1,0 +1,48 @@
+#%Module1.0#####################################################################
+##
+## websphere modulefile
+##
+proc ModulesHelp { } {
+        global version prefix profile
+
+        puts stderr "\twebsphere - loads the IBM WebSphere Application Server (traditional) environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tProfile: $profile"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the IBM WebSphere Application Server 9.0.5.28 (ILAN) environment"
+
+# for Tcl script use only
+set	version		9.0.5.28
+set	prefix		/opt/websphere/$version
+# Traditional WAS keeps its servers inside a "profile" created with
+# manageprofiles.sh, not under the install directory.
+set	profile		/opt/websphere/profiles/AppSrv01
+set	serverName	server1
+
+# Traditional WAS 9.0 bundles its own IBM Java 8 under $prefix/java/8.0,
+# so no java module is loaded here.
+
+setenv        WAS_HOME      $prefix
+setenv        PROFILE_HOME  $profile
+setenv        JAVA_HOME     $prefix/java/8.0
+prepend-path  PATH          $prefix/bin
+prepend-path  PATH          $profile/bin
+
+# Create aliases for easy management
+# Run as the dedicated `websphere` service account; --preserve-env keeps
+# the variables above across sudo's environment reset. startServer.sh
+# already backgrounds itself. stopServer.sh needs -username/-password
+# once administrative security is enabled (the default for a new profile).
+set-alias     websphere-start    "sudo --preserve-env=JAVA_HOME,WAS_HOME,PROFILE_HOME,PATH -u websphere $profile/bin/startServer.sh $serverName"
+set-alias     websphere-stop     "sudo --preserve-env=JAVA_HOME,WAS_HOME,PROFILE_HOME,PATH -u websphere $profile/bin/stopServer.sh $serverName"
+set-alias     websphere-status   "sudo --preserve-env=JAVA_HOME,WAS_HOME,PROFILE_HOME,PATH -u websphere $profile/bin/serverStatus.sh $serverName"
+set-alias     websphere-wsadmin  "sudo --preserve-env=JAVA_HOME,WAS_HOME,PROFILE_HOME,PATH -u websphere $profile/bin/wsadmin.sh"
+set-alias     websphere-logs     "tail -f $profile/logs/$serverName/SystemOut.log"
+set-alias     websphere-errors   "tail -f $profile/logs/$serverName/SystemErr.log"
+set-alias     websphere-console  "echo https://localhost:9043/ibm/console"
+set-alias     websphere-clean-log "sudo -u websphere truncate -s 0 $profile/logs/$serverName/SystemOut.log $profile/logs/$serverName/SystemErr.log"
+
+conflict srv/websphere
