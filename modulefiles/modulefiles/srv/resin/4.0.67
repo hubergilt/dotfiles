@@ -1,0 +1,41 @@
+#%Module1.0#####################################################################
+##
+## resin modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tresin - loads the Caucho Resin Pro environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Caucho Resin Pro 4.0.67 environment"
+
+# for Tcl script use only
+set	version		4.0.67
+set	prefix		/opt/resin/$version
+
+# Resin 4.0.x only runs reliably on Java 8 (newer JDKs removed internals it uses)
+if { ![is-loaded java] } {
+    module load java/8u481
+}
+
+setenv        RESIN_HOME    $prefix
+prepend-path  PATH          $prefix/bin
+
+# Create aliases for easy management
+# Run as the dedicated `resin` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     resin-start   "(cd $prefix && sudo --preserve-env=JAVA_HOME,RESIN_HOME,PATH -u resin $prefix/bin/resin.sh start)"
+set-alias     resin-stop    "(cd $prefix && sudo --preserve-env=JAVA_HOME,RESIN_HOME,PATH -u resin $prefix/bin/resin.sh stop)"
+set-alias     resin-restart "(cd $prefix && sudo --preserve-env=JAVA_HOME,RESIN_HOME,PATH -u resin $prefix/bin/resin.sh restart)"
+set-alias     resin-console "(cd $prefix && sudo --preserve-env=JAVA_HOME,RESIN_HOME,PATH -u resin $prefix/bin/resin.sh console)"
+set-alias     resin-logs    "tail -f $prefix/log/jvm-*.log"
+set-alias     resin-status  "if pgrep -f \"resin.home=$prefix\" > /dev/null; then echo \"Resin is running (PIDs: \$(pgrep -f 'resin.home=$prefix' | paste -sd,))\"; else echo \"Resin is not running\"; fi"
+set-alias     resin-clean-log "sudo -u resin sh -c 'truncate -s 0 $prefix/log/jvm-*.log'"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/resin/$version}

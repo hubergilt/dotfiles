@@ -1,0 +1,41 @@
+#%Module1.0#####################################################################
+##
+## jetty modulefile
+##
+proc ModulesHelp { } {
+        global version prefix base
+
+        puts stderr "\tjetty - loads the Eclipse Jetty environment"
+        puts stderr "\n\tJETTY_HOME: $prefix"
+        puts stderr "\tJETTY_BASE: $base"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Eclipse Jetty 12.1.13 environment"
+
+# for Tcl script use only
+set	version		12.1.13
+set	prefix		/opt/jetty/$version
+set	base		/opt/jetty/base/$version
+
+# Jetty 12.1 requires Java 17 or newer
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv        JETTY_HOME    $prefix
+setenv        JETTY_BASE    $base
+setenv        JETTY_RUN     $base/run
+setenv        JETTY_PID     $base/run/jetty.pid
+prepend-path  PATH          $prefix/bin
+
+# Create aliases for easy management
+# Run as the dedicated `jetty` service account, not whoever loaded this
+# module — --preserve-env is required since sudo resets the environment by
+# default, which would otherwise drop JAVA_HOME set by `module load java`.
+set-alias     jetty-start  "(cd $base && sudo --preserve-env=JAVA_HOME,JETTY_HOME,JETTY_BASE,JETTY_RUN,JETTY_PID,PATH -u jetty $prefix/bin/jetty.sh start)"
+set-alias     jetty-stop   "(cd $base && sudo --preserve-env=JAVA_HOME,JETTY_HOME,JETTY_BASE,JETTY_RUN,JETTY_PID,PATH -u jetty $prefix/bin/jetty.sh stop)"
+set-alias     jetty-run    "(cd $base && sudo --preserve-env=JAVA_HOME,JETTY_HOME,JETTY_BASE,JETTY_RUN,JETTY_PID,PATH -u jetty $prefix/bin/jetty.sh run)"
+set-alias     jetty-status "(cd $base && sudo --preserve-env=JAVA_HOME,JETTY_HOME,JETTY_BASE,JETTY_RUN,JETTY_PID,PATH -u jetty $prefix/bin/jetty.sh status)"
+set-alias     jetty-logs   "tail -f $base/logs/*.log"
+set-alias     jetty-clean-log "sudo -u jetty sh -c 'truncate -s 0 $base/logs/*.log'"
