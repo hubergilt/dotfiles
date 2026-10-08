@@ -1,0 +1,32 @@
+#%Module1.0#####################################################################
+##
+## guacamole modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tguacamole - Apache Guacamole (guacd + web app on Tomcat 9)"
+        puts stderr "\n\tCommands: guacd-start, guacd-stop, guacd-status"
+        puts stderr "\tStart the web app with tomcat-start (loaded via srv/tomcat/9.0.122)"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis   "loads the Apache Guacamole 1.6.0 environment"
+
+set     version     1.6.0
+set     prefix      /opt/guacamole/$version
+
+# Guacamole's web app needs Tomcat 9 (javax.servlet), NOT Tomcat 11.
+conflict srv/tomcat/11.0.26
+module load srv/tomcat/9.0.122
+
+setenv        GUACAMOLE_HOME  $prefix/etc
+prepend-path  PATH            $prefix/bin
+prepend-path  PATH            $prefix/sbin
+prepend-path  LD_LIBRARY_PATH $prefix/lib
+prepend-path  MANPATH         $prefix/share/man
+
+set-alias  guacd-start  "sudo -u guacamole env LD_LIBRARY_PATH=$prefix/lib $prefix/sbin/guacd -b 127.0.0.1 -l 4822 -p $prefix/run/guacd.pid"
+set-alias  guacd-stop   "sudo -u guacamole kill \$(cat $prefix/run/guacd.pid)"
+set-alias  guacd-status "pgrep -x guacd >/dev/null && echo 'guacd: running' || echo 'guacd: stopped'"
+set-alias  guacd-logs  "journalctl -t guacd -f"
