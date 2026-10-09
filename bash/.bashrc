@@ -152,8 +152,8 @@ export PATH=/home/huber/.opencode/bin:$PATH
 #Platform Abstraction for x11 use xcb
 QT_QPA_PLATFORM=xcb
 #fswatch
-if ! pgrep -f "fswatch.*rotate_downloads" > /dev/null; then
-    fswatch -0 --format="%p" -e "\.part$" -e "\.download$" "$HOME/Downloads" | xargs -0 -n 1 ~/dotfiles/fswatch/rotate_downloads.sh > /dev/null 2>&1 &
+if ! pgrep -f "scripts.*fswatch" > /dev/null; then
+    fswatch -0 --format="%p" -e "\.part$" -e "\.download$" "$HOME/Downloads" | xargs -0 -n 1 ~/dotfiles/scripts/fswatch.sh > /dev/null 2>&1 &
     disown
 fi
 #rbenv
