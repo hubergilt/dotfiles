@@ -20,6 +20,10 @@ set	prefix      /opt/grails/$version
 
 # Conflict with other Grails versions
 conflict dev/grails
+# Grails 7 requires JDK 11 minimum
+if { ![is-loaded java] } {
+    module load java/11.0.30
+}
 
 # Environment setup
 setenv          GRAILS_HOME $prefix
