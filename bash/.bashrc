@@ -153,7 +153,7 @@ export PATH=/home/huber/.opencode/bin:$PATH
 QT_QPA_PLATFORM=xcb
 #fswatch
 if ! pgrep -f "scripts.*fswatch" > /dev/null; then
-    fswatch -0 --format="%p" -e "\.part$" -e "\.download$" "$HOME/Downloads" | xargs -0 -n 1 ~/dotfiles/scripts/fswatch.sh > /dev/null 2>&1 &
+    fswatch -0 --format="%p" -e "\.part$" -e "\.download$" "$HOME/Downloads" | xargs -0 -n 1 ~/scripts/fswatch.sh > /dev/null 2>&1 &
     disown
 fi
 #rbenv

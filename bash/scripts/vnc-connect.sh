@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run on YOUR local machine. Copies vnc-start.sh.sh to asus.lan, starts the remote
+# Run on YOUR local machine. Copies vnc-start.sh to asus.lan, starts the remote
 # Xvfb+i3+x11vnc stack, opens the SSH tunnel, launches the VNC viewer, and
 # cleans up when you close it.
 # Requires: sshpass, xtigervncviewer (or vncviewer)
@@ -9,7 +9,7 @@ HOST="asus.lan"
 REMOTE_USER="huber"
 export SSHPASS="huber"          # SSH login password (plain text: keep this file private)
 LOCAL_PORT=5900                 # change if 5900 is already used on your PC
-RESOLUTION="2560x1600"          # virtual screen size (only applied when Xvfb starts fresh)
+RESOLUTION="2540x1490"          # virtual screen size (only applied when Xvfb starts fresh)
 SOCK="/tmp/vnc-tunnel-$$.sock"
 PASSFILE="$(mktemp)"
 
@@ -32,7 +32,7 @@ cleanup() {
 trap cleanup EXIT
 
 # 1. Copy vnc-start.sh.sh to the remote machine (overwrites the old copy)
-echo "Copying vnc-start.sh.sh to $HOST..."
+echo "Copying vnc-startsh to $HOST..."
 printf '%s\n' "${START_SCRIPT//__RES__/$RESOLUTION}" | \
     sshpass -e ssh $SSH_OPTS "$REMOTE_USER@$HOST" 'cat > ~/vnc-start.sh.sh && chmod +x ~/vnc-start.sh.sh' || exit 1
 

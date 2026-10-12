@@ -1,0 +1,18 @@
+#%Module1.0
+##
+## Apache NetBeans 31
+##
+
+proc ModulesHelp { } {
+    puts stderr "Apache NetBeans 31 IDE (requires a JDK, load java/<version> first)"
+}
+
+module-whatis "Apache NetBeans 31 IDE"
+
+conflict dev/netbeans
+prereq java
+
+set root /opt/netbeans/31
+
+setenv NETBEANS_HOME $root
+prepend-path PATH $root/bin
