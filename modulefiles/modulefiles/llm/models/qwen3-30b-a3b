@@ -22,4 +22,5 @@ if { ![file exists $file] } {
 
 setenv        LLM_MODEL         $file
 setenv        LLM_MODEL_NAME    qwen3-30b-a3b
-setenv        LLM_ARGS          "-ngl 99 --n-cpu-moe 30 -c 8192"
+setenv        LLM_ARGS          "-ngl 99 --n-cpu-moe 30"
+setenv        LLM_CTX           8192

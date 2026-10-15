@@ -22,4 +22,5 @@ if { ![file exists $file] } {
 
 setenv        LLM_MODEL         $file
 setenv        LLM_MODEL_NAME    qwen3-coder-30b-a3b
-setenv        LLM_ARGS          "-c 16384"
+setenv        LLM_ARGS          ""
+setenv        LLM_CTX           16384

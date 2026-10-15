@@ -24,9 +24,13 @@ setenv        LLAMACPP_HOME     $prefix
 setenv        LLAMA_CACHE       $gguf
 
 # Create aliases for easy management (OpenAI-compatible API on :8080)
-# Load a model module first: it sets LLM_MODEL (file) and LLM_ARGS (tuned flags)
-set-alias     llama-serve       "llama-server -m \$LLM_MODEL \$LLM_ARGS -np 1 --host 127.0.0.1 --port 8080"
-set-alias     llama-chat        "llama-cli -m \$LLM_MODEL \$LLM_ARGS -cnv"
+# Load a model module first: it sets LLM_MODEL (file), LLM_ARGS (tuned flags)
+# and LLM_CTX (default context size in tokens)
+set-alias     llama-serve       "llama-server -m \$LLM_MODEL \$LLM_ARGS -c \${LLM_CTX:-16384} -np 1 --host 127.0.0.1 --port 8080"
+set-alias     llama-serve-8k    "llama-server -m \$LLM_MODEL \$LLM_ARGS -c 8192 -np 1 --host 127.0.0.1 --port 8080"
+set-alias     llama-serve-16k   "llama-server -m \$LLM_MODEL \$LLM_ARGS -c 16384 -np 1 --host 127.0.0.1 --port 8080"
+set-alias     llama-serve-32k   "llama-server -m \$LLM_MODEL \$LLM_ARGS -c 32768 -np 1 --host 127.0.0.1 --port 8080"
+set-alias     llama-chat        "llama-cli -m \$LLM_MODEL \$LLM_ARGS -c \${LLM_CTX:-16384} -cnv"
 set-alias     llama-bench-model "llama-bench -m \$LLM_MODEL -ngl 99"
 set-alias     llama-stop        "pkill -f llama-server"
 set-alias     llama-gpu         "watch -n1 nvidia-smi"
