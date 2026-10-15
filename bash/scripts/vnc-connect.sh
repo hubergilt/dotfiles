@@ -15,7 +15,7 @@ PASSFILE="$(mktemp)"
 
 SSH_OPTS="-o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30"
 
-# The script that will be copied to ~/vnc-start.sh.sh on the remote machine
+# The script that will be copied to ~/vnc-start.sh on the remote machine
 read -r -d '' START_SCRIPT <<'EOF'
 #!/bin/bash
 pgrep -x Xvfb >/dev/null || nohup Xvfb :1 -screen 0 __RES__x24 >/tmp/xvfb.log 2>&1 &
@@ -31,20 +31,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# 1. Copy vnc-start.sh.sh to the remote machine (overwrites the old copy)
-echo "Copying vnc-startsh to $HOST..."
+# 1. Copy vnc-start.sh to the remote machine (overwrites the old copy)
+echo "Copying vnc-start.sh to $HOST..."
 printf '%s\n' "${START_SCRIPT//__RES__/$RESOLUTION}" | \
-    sshpass -e ssh $SSH_OPTS "$REMOTE_USER@$HOST" 'cat > ~/vnc-start.sh.sh && chmod +x ~/vnc-start.sh.sh' || exit 1
+    sshpass -e ssh $SSH_OPTS "$REMOTE_USER@$HOST" 'cat > ~/vnc-start.sh && chmod +x ~/vnc-start.sh' || exit 1
 
 # 2. Run it and wait until x11vnc is listening
 echo "Starting remote VNC stack on $HOST..."
 sshpass -e ssh $SSH_OPTS "$REMOTE_USER@$HOST" '
-    setsid -w ~/vnc-start.sh.sh </dev/null >/tmp/vnc-start.sh.log 2>&1
+    setsid -w ~/vnc-start.sh </dev/null >/tmp/vnc-start.log 2>&1
     for i in $(seq 20); do
         ss -ltn | grep -q "127.0.0.1:5900" && exit 0
         sleep 0.5
     done
-    echo "x11vnc did not start. See /tmp/vnc-start.sh.log on the remote machine." >&2
+    echo "x11vnc did not start. See /tmp/vnc-start.log on the remote machine." >&2
     exit 1
 ' || exit 1
 
