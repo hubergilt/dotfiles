@@ -1,0 +1,25 @@
+#%Module1.0#####################################################################
+##
+## qwen25-coder-7b model modulefile
+##
+proc ModulesHelp { } {
+        global version file
+
+        puts stderr "\tqwen25-coder-7b - selects the Qwen2.5-Coder 7B Q4_K_M GGUF model"
+        puts stderr "\n\tSets LLM_MODEL for use with llama-server / llama-cli"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"selects Qwen2.5-Coder 7B Q4_K_M (about 4.7 GB, fits GTX 1060 6GB)"
+
+# for Tcl script use only
+set	version		Q4_K_M
+set	file		/opt/llm-models/gguf/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+
+if { ![file exists $file] } {
+    puts stderr "WARNING: model file not found: $file"
+}
+
+setenv        LLM_MODEL         $file
+setenv        LLM_MODEL_NAME    qwen25-coder-7b
+setenv        LLM_ARGS          "-ngl 99 -c 8192"

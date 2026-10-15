@@ -1,0 +1,25 @@
+#%Module1.0#####################################################################
+##
+## qwen3-8b model modulefile
+##
+proc ModulesHelp { } {
+        global version file
+
+        puts stderr "\tqwen3-8b - selects the Qwen3 8B Q4_K_M GGUF model"
+        puts stderr "\n\tSets LLM_MODEL for use with llama-server / llama-cli"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"selects Qwen3 8B Q4_K_M (about 5 GB, fits GTX 1060 6GB)"
+
+# for Tcl script use only
+set	version		Q4_K_M
+set	file		/opt/llm-models/gguf/Qwen3-8B-Q4_K_M.gguf
+
+if { ![file exists $file] } {
+    puts stderr "WARNING: model file not found: $file"
+}
+
+setenv        LLM_MODEL         $file
+setenv        LLM_MODEL_NAME    qwen3-8b
+setenv        LLM_ARGS          "-ngl 99 -c 4096"

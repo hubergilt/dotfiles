@@ -1,0 +1,25 @@
+#%Module1.0#####################################################################
+##
+## qwen3-30b-a3b model modulefile
+##
+proc ModulesHelp { } {
+        global version file
+
+        puts stderr "\tqwen3-30b-a3b - selects the Qwen3 30B-A3B Q4_K_M GGUF model"
+        puts stderr "\n\tSets LLM_MODEL for use with llama-server / llama-cli"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"selects Qwen3 30B-A3B Q4_K_M (about 18 GB, MoE: use llama-serve-moe)"
+
+# for Tcl script use only
+set	version		Q4_K_M
+set	file		/opt/llm-models/gguf/Qwen3-30B-A3B-Q4_K_M.gguf
+
+if { ![file exists $file] } {
+    puts stderr "WARNING: model file not found: $file"
+}
+
+setenv        LLM_MODEL         $file
+setenv        LLM_MODEL_NAME    qwen3-30b-a3b
+setenv        LLM_ARGS          "-ngl 99 --n-cpu-moe 30 -c 8192"

@@ -1,0 +1,35 @@
+#%Module1.0#####################################################################
+##
+## llama.cpp modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tllamacpp - loads the llama.cpp (CUDA) environment"
+        puts stderr "\n\tThis adds llama-cli, llama-server, llama-bench to your PATH"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the llama.cpp b11618 CUDA build (GTX 1060, sm_61)"
+
+# for Tcl script use only
+set	version		b11618
+set	prefix		/opt/llamacpp/$version
+set	gguf		/opt/llm-models/gguf
+
+prepend-path  PATH              $prefix/bin
+prepend-path  LD_LIBRARY_PATH   $prefix/lib
+prepend-path  MANPATH           $prefix/share/man
+setenv        LLAMACPP_HOME     $prefix
+setenv        LLAMA_CACHE       $gguf
+
+# Create aliases for easy management (OpenAI-compatible API on :8080)
+# Load a model module first: it sets LLM_MODEL (file) and LLM_ARGS (tuned flags)
+set-alias     llama-serve       "llama-server -m \$LLM_MODEL \$LLM_ARGS -np 1 --host 127.0.0.1 --port 8080"
+set-alias     llama-chat        "llama-cli -m \$LLM_MODEL \$LLM_ARGS -cnv"
+set-alias     llama-bench-model "llama-bench -m \$LLM_MODEL -ngl 99"
+set-alias     llama-stop        "pkill -f llama-server"
+set-alias     llama-gpu         "watch -n1 nvidia-smi"
+
+# enable module versioning modulepath
+#module use {~/modulefiles/llm/llamacpp/$version}
