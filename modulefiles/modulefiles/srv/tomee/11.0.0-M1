@@ -1,0 +1,47 @@
+#%Module1.0#####################################################################
+##
+## tomee modulefile  (modeled on srv/tomcat/*)
+##
+## Install as: ~/modulefiles/srv/tomee/<version>
+## The version is taken from the modulefile name, so one file serves all versions.
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\ttomee - loads the Apache TomEE environment"
+        puts stderr "\n\tTomEE is Tomcat + Jakarta EE (Web Profile / Plus / Plume)."
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+# for Tcl script use only
+set     version         [file tail [module-info name]]
+set     prefix          /opt/tomee/$version
+set     svcuser         tomcat
+
+module-whatis   "loads the Apache TomEE $version environment"
+
+# TomEE ships its own embedded Tomcat, so it cannot coexist with the
+# standalone Tomcat module (both set CATALINA_HOME, PATH and tomcat-* aliases)
+conflict        srv/tomcat
+
+# TomEE requires Java (same default as the Tomcat module)
+if { ![is-loaded java] } {
+    module load java/25.0.1
+}
+
+setenv          CATALINA_HOME   $prefix
+setenv          TOMEE_HOME      $prefix
+prepend-path    PATH            $prefix/bin
+
+# Same alias set as the Tomcat module, so muscle memory carries over.
+# Runs as the dedicated service account; --preserve-env is needed because
+# sudo resets the environment and would drop JAVA_HOME from `module load java`.
+set     sudo    "sudo --preserve-env=JAVA_HOME,CATALINA_HOME,CATALINA_BASE,PATH -u $svcuser"
+
+set-alias       tomee-start     "(cd $prefix && $sudo $prefix/bin/startup.sh)"
+set-alias       tomee-stop      "(cd $prefix && $sudo $prefix/bin/shutdown.sh)"
+set-alias       tomee-logs      "tail -f $prefix/logs/catalina.out"
+set-alias       tomee-status    "if pgrep -f \"catalina.home=$prefix\" > /dev/null; then echo \"TomEE is running (PID: \$(pgrep -f 'catalina.home=$prefix'))\"; else echo \"TomEE is not running\"; fi"
+set-alias       tomee-clean-log "sudo -u $svcuser truncate -s 0 $prefix/logs/catalina.out"

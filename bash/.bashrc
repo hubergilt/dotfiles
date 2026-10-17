@@ -162,3 +162,5 @@ eval "$(rbenv init - bash)"
 export PATH="/home/huber/.kimi-code/bin:$PATH"
 #sqlcmd
 export PATH="$PATH:/opt/mssql-tools18/bin"
+#llama
+export LLAMA_API_KEY="066827d0be3139a7d35199f6549c638e81551f8d8a53281b"
