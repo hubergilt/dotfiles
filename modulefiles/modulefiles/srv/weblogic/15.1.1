@@ -1,0 +1,50 @@
+#%Module1.0#####################################################################
+##
+## weblogic modulefile
+##
+## Install location : ~/modulefiles/srv/weblogic/15.1.1
+## ORACLE_HOME      : /opt/weblogic/15.1.1
+## Domain           : /opt/weblogic/domains/15.1.1/base_domain
+##
+proc ModulesHelp { } {
+        global version prefix domain
+
+        puts stderr "\tweblogic - loads the Oracle WebLogic Server environment"
+        puts stderr "\n\tORACLE_HOME : $prefix"
+        puts stderr "\tDOMAIN_HOME : $domain"
+        puts stderr "\n\tAliases: weblogic-start weblogic-start-bg weblogic-stop weblogic-status weblogic-logs weblogic-wlst weblogic-clean-log"
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Oracle WebLogic Server 15.1.1.0.0 environment"
+
+# for Tcl script use only
+set	version		15.1.1
+set	prefix		/opt/weblogic/$version
+set	domain		/opt/weblogic/domains/$version/base_domain
+
+# WebLogic 15.1.1 needs JDK 17.0.16+ or 21.0.8+ (never Java 25)
+if { [is-loaded java] } {
+    module unload java
+}
+module load java/21.0.12
+
+setenv        ORACLE_HOME  $prefix
+setenv        MW_HOME      $prefix
+setenv        WL_HOME      $prefix/wlserver
+setenv        DOMAIN_HOME  $domain
+
+prepend-path  PATH         $prefix/oracle_common/common/bin
+prepend-path  PATH         $domain/bin
+
+# Aliases: run as the dedicated "weblogic" service account.
+# --preserve-env keeps JAVA_HOME (set by the java module) through sudo.
+set sudo_wls "sudo --preserve-env=JAVA_HOME,ORACLE_HOME,WL_HOME,DOMAIN_HOME -u weblogic"
+
+set-alias     weblogic-stop       "$sudo_wls $domain/bin/stopWebLogic.sh"
+set-alias     weblogic-wlst       "$sudo_wls $prefix/oracle_common/common/bin/wlst.sh"
+set-alias     weblogic-status     "pgrep -fa weblogic.Name=AdminServer || echo 'WebLogic is not running'"
+set-alias     weblogic-clean-log  "sudo -u weblogic truncate -s 0 $domain/servers/AdminServer/logs/AdminServer.log"
+set-alias     weblogic-start      "$sudo_wls bash -c 'cd $domain && ./startWebLogic.sh'"
+set-alias     weblogic-start-bg   "$sudo_wls bash -c 'cd $domain && nohup ./startWebLogic.sh > $domain/server.out 2>&1 &'"
+set-alias     weblogic-logs       "sudo tail -F $domain/servers/AdminServer/logs/AdminServer.log"
