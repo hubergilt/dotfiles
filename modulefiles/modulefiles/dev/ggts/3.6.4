@@ -1,0 +1,31 @@
+#%Module1.0#####################################################################
+##
+## Groovy Grails Toolsuit for Eclipse modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tgroovy-grails-toolsuit - loads the Groovy Grails Toolsuit for Eclipse IDE environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Groovy and Grails Toolsuit for Eclipse 3.6.4.RELEASE environment"
+
+# for Tcl script use only
+set	version		3.6.4
+set	prefix		/opt/ggts/$version
+
+# Spring Tools 3 requires Java 8+
+if { ![is-loaded java] } {
+    module load java/8u481
+}
+
+setenv        GGTS_HOME         $prefix
+prepend-path  PATH              $prefix
+
+# Create alias for easy launching
+# GDK_BACKEND=x11 forces XWayland; old SWT (Eclipse Luna) crashes on native Wayland.
+# Set only in the alias so other GTK programs in the shell are not affected.
+set-alias ggts {env SWT_GTK3=0 GDK_BACKEND=x11 /opt/ggts/3.6.4/GGTS}

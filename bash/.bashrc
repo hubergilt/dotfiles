@@ -164,3 +164,7 @@ export PATH="/home/huber/.kimi-code/bin:$PATH"
 export PATH="$PATH:/opt/mssql-tools18/bin"
 #llama
 export LLAMA_API_KEY="066827d0be3139a7d35199f6549c638e81551f8d8a53281b"
+#scala
+export JAVA_OPTS="-Xbootclasspath/a:/usr/share/java/jansi1.jar"
+#vcsa
+export GOVC_URL=https://vcsa.lan/sdk GOVC_USERNAME='administrator@vsphere.local' GOVC_PASSWORD='Server2012!' GOVC_INSECURE=1

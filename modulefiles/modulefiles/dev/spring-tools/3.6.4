@@ -1,0 +1,29 @@
+#%Module1.0#####################################################################
+##
+## Spring Tools for Eclipse modulefile
+##
+proc ModulesHelp { } {
+        global version prefix
+
+        puts stderr "\tspring-tools - loads the Spring Tools for Eclipse IDE environment"
+        puts stderr "\n\tThis adds $prefix/* to several of the"
+        puts stderr "\tenvironment variables."
+        puts stderr "\n\tVersion $version\n"
+}
+
+module-whatis	"loads the Spring Tools for Eclipse 3.6.4.RELEASE environment"
+
+# for Tcl script use only
+set	version		3.6.4
+set	prefix		/opt/spring-tools/$version
+
+# Spring Tools 3 requires Java 8+
+if { ![is-loaded java] } {
+    module load java/8u481
+}
+
+setenv        SPRING_TOOLS_HOME $prefix
+prepend-path  PATH              $prefix
+
+# Create alias for easy launching
+set-alias     sts          "$prefix/STS"
